@@ -2,16 +2,15 @@ name: dictionary
 version: 0.0
 author: "bnspalding"
 copyright: "Copyright (c) 2019 Ben Spalding"
-synopsis: "project description for seq-sel/dictionary"
-
+synopsis: "lexical dictionary: words, glosses, pronunciations, pos"
 description: Please see the README on GitHub at <https://github.com/bnspalding/seq-sel#readme>
 
 dependencies:
   - base >= 4.9 && < 5
   - containers
   - sound
+  - text
 
 library:
   source-dirs: src
 
-default-extensions: []

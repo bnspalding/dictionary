@@ -1,17 +1,18 @@
 module Dictionary where
 
 import qualified Data.Set as Set
+import qualified Data.Text as T
 import Sound.Pronunciation (Pronunciation, makePronunciation)
 
 type Dictionary = Set.Set Entry
 
-data Entry =
-  Entry
-    { text :: String
-    , glosses :: [String] -- the definition(s) of a word
-    , pos :: String -- at some point, a more constrained type may be better
-    , pronunciation :: Pronunciation -- same as Sound.Word, i.e. [Syl]
-    }
+data Entry
+  = Entry
+      { text :: T.Text,
+        glosses :: [T.Text], -- the definition(s) of a word
+        pos :: T.Text, -- at some point, a more constrained type may be better
+        pronunciation :: Pronunciation -- same as Sound.Word, i.e. [Syl]
+      }
   deriving (Eq, Show)
 
 instance Ord Entry where
@@ -20,7 +21,7 @@ instance Ord Entry where
 fromList :: [Entry] -> Dictionary
 fromList = Set.fromList
 
-fromStringTuples :: [(String, [String], String, String)] -> Dictionary
+fromStringTuples :: [(T.Text, [T.Text], T.Text, T.Text)] -> Dictionary
 fromStringTuples ts = fromList $ uncurriedMakeEntry <$> ts
   where
     uncurriedMakeEntry (t, g, p, pr) = makeEntry t g p pr
@@ -59,18 +60,18 @@ contains d entry = Set.member entry d
 
 -- becase lookupGE returns the first entry GE an entry with text "c"
 -- it is necessary to ensure the entry actually starts with c
--- otherwise, firstOfLetter d 's' could return entry with text "t..." 
+-- otherwise, firstOfLetter d 's' could return entry with text "t..."
 -- for a dictionary with no entries beginning with 's'
 firstOfLetter :: Dictionary -> Char -> Maybe Entry
 firstOfLetter d c =
-  let maybeE = Set.lookupGE (Entry [c] [] [] []) d
+  let maybeE = Set.lookupGE (Entry (T.singleton c) [] T.empty []) d
    in case maybeE of
         Nothing -> Nothing
         Just e ->
-          if head (text e) == c
+          if T.head (text e) == c
             then Just e
             else Nothing
 
-makeEntry :: String -> [String] -> String -> String -> Entry
+makeEntry :: T.Text -> [T.Text] -> T.Text -> T.Text -> Entry
 makeEntry _text _glosses _pos _pronString =
   Entry _text _glosses _pos (makePronunciation _pronString)
