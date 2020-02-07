@@ -1,0 +1,17 @@
+name: dictionary
+version: 0.0
+author: "bnspalding"
+copyright: "Copyright (c) 2019 Ben Spalding"
+synopsis: "project description for seq-sel/dictionary"
+
+description: Please see the README on GitHub at <https://github.com/bnspalding/seq-sel#readme>
+
+dependencies:
+  - base >= 4.9 && < 5
+  - containers
+  - sound
+
+library:
+  source-dirs: src
+
+default-extensions: []

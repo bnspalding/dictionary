@@ -1,0 +1,13 @@
+resolver: lts-14.1
+
+packages:
+  - .
+
+ghc-options:
+  "$locals": -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
+
+rebuild-ghc-options: true
+
+extra-deps:
+  - github: bnspalding/sound
+    commit: c1f0f83eefcb720dc288c7c1542bf160db59ab85
