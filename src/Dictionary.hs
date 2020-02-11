@@ -21,6 +21,7 @@ module Dictionary
 
     -- * Construction
     makeEntry,
+    makeEntry1,
     fromStringTuples,
     fromList,
 
@@ -186,7 +187,13 @@ makeEntry _text _defs _pronString =
   where
     defs = uncurry Definition <$> _defs
 
--- TODO: add makeEntry' that just takes 4 flat arguments
+-- | makeEntry1 constructs an Entry with a single definition from its
+-- constituent elements. makeEntry1 can be used to generate Entries more simply.
+-- It generates the pronunciation for the entry from an IPA symbol string using
+-- "Sound.Pronunciation".'Sound.Pronunciation.makePronunciation'.
+makeEntry1 :: T.Text -> T.Text -> T.Text -> T.Text -> Entry
+makeEntry1 _text _gloss _pos _pronString =
+  Entry _text [Definition _gloss _pos] (makePronunciation _pronString)
 
 _entry :: (Rep, [Definition]) -> Entry
 _entry (r, ds) = Entry (_text r) ds (_pron r)
