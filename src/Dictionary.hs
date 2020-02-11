@@ -6,11 +6,17 @@ import Sound.Pronunciation (Pronunciation, makePronunciation)
 
 type Dictionary = Set.Set Entry
 
+data Definition
+  = Definition
+      { gloss :: T.Text,
+        pos :: T.Text
+      }
+  deriving (Eq, Show)
+
 data Entry
   = Entry
       { text :: T.Text,
-        glosses :: [T.Text], -- the definition(s) of a word
-        pos :: T.Text, -- at some point, a more constrained type may be better
+        definitions :: [Definition], -- gloss, pos
         pronunciation :: Pronunciation -- same as Sound.Word, i.e. [Syl]
       }
   deriving (Eq, Show)
@@ -21,10 +27,10 @@ instance Ord Entry where
 fromList :: [Entry] -> Dictionary
 fromList = Set.fromList
 
-fromStringTuples :: [(T.Text, [T.Text], T.Text, T.Text)] -> Dictionary
+fromStringTuples :: [(T.Text, [(T.Text, T.Text)], T.Text)] -> Dictionary
 fromStringTuples ts = fromList $ uncurriedMakeEntry <$> ts
   where
-    uncurriedMakeEntry (t, g, p, pr) = makeEntry t g p pr
+    uncurriedMakeEntry (t, ds, pr) = makeEntry t ds pr
 
 first :: Dictionary -> Entry
 first = Set.elemAt 0
@@ -64,7 +70,7 @@ contains d entry = Set.member entry d
 -- for a dictionary with no entries beginning with 's'
 firstOfLetter :: Dictionary -> Char -> Maybe Entry
 firstOfLetter d c =
-  let maybeE = Set.lookupGE (Entry (T.singleton c) [] T.empty []) d
+  let maybeE = Set.lookupGE (Entry (T.singleton c) [] []) d
    in case maybeE of
         Nothing -> Nothing
         Just e ->
@@ -72,6 +78,8 @@ firstOfLetter d c =
             then Just e
             else Nothing
 
-makeEntry :: T.Text -> [T.Text] -> T.Text -> T.Text -> Entry
-makeEntry _text _glosses _pos _pronString =
-  Entry _text _glosses _pos (makePronunciation _pronString)
+makeEntry :: T.Text -> [(T.Text, T.Text)] -> T.Text -> Entry
+makeEntry _text _defs _pronString =
+  Entry _text defs (makePronunciation _pronString)
+  where
+    defs = uncurry Definition <$> _defs
