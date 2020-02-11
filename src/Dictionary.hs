@@ -104,15 +104,12 @@ instance Eq Entry where
 fromList :: [Entry] -> Dictionary
 fromList es = Map.fromListWith (++) (_toInternal <$> es)
 
--- TODO: fix fromStringTuples to use a flat structure.
--- Use the equality of entries to merge multiple definitions onto entries
-
 -- | fromStringTuples constructs a dictionary from a set of string tuples
 -- that are generated, for example, from parsing a file
-fromStringTuples :: [(T.Text, [(T.Text, T.Text)], T.Text)] -> Dictionary
+fromStringTuples :: [(T.Text, T.Text, T.Text, T.Text)] -> Dictionary
 fromStringTuples ts = fromList $ uncurriedMakeEntry <$> ts
   where
-    uncurriedMakeEntry (t, ds, pr) = makeEntry t ds pr
+    uncurriedMakeEntry (t, d, p, pr) = makeEntry1 t d p pr
 
 -- | first provides the first element of the Dictionary (by text, ascending)
 first :: Dictionary -> Entry
