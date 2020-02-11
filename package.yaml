@@ -3,7 +3,7 @@ version: 0.0
 author: "bnspalding"
 copyright: "Copyright (c) 2019 Ben Spalding"
 synopsis: "lexical dictionary: words, glosses, pronunciations, pos"
-description: Please see the README on GitHub at <https://github.com/bnspalding/seq-sel#readme>
+description: Please see the README on Github at <https://github.com/bnspalding/dictionary#readme>
 
 dependencies:
   - base >= 4.9 && < 5
@@ -13,4 +13,19 @@ dependencies:
 
 library:
   source-dirs: src
+
+tests:
+  dictionary-test:
+    main: Spec.hs
+    source-dirs: test
+    dependencies:
+      - dictionary
+      - hspec
+
+ghc-options:
+  - -Wall
+  - -Wcompat
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wredundant-constraints
 
