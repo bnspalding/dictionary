@@ -1,4 +1,19 @@
-module Dictionary where
+module Dictionary
+  ( Dictionary (..),
+    Entry (..),
+    Definition (..),
+    makeEntry,
+    fromStringTuples,
+    fromList,
+    first,
+    Dictionary.last,
+    size,
+    next,
+    prev,
+    firstOfLetter,
+    contains,
+  )
+where
 
 import qualified Data.Set as Set
 import qualified Data.Text as T
