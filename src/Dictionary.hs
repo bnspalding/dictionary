@@ -35,12 +35,35 @@ module Dictionary
   )
 where
 
-import qualified Data.Set as Set
+import qualified Data.Map as Map
 import qualified Data.Text as T
 import Sound.Pronunciation (Pronunciation, makePronunciation)
 
--- | A Dictionary is a Set of Entries
-type Dictionary = Set.Set Entry
+-- | A Dictionary is a Map of Representations to Definitions. Use Entries when
+-- working with a dictionary, not Reps.
+--
+-- A map is used to make sense of merging definitions to a representation. All
+-- dictionary methods wrap inputs and outputs in Entries, so there should never
+-- be a need to work with the internal Rep, [Definition] map representation.
+type Dictionary = Map.Map Rep [Definition]
+
+-- | Rep (short for Repesentation) is a (text, pronunciation) pair. Together
+-- with a set of definitions, it forms a dictionary entry. Most of the time, you
+-- should be working with Entries, rather than Reps.
+--
+-- For example,
+-- ("read", "ɹid") is a unique pair separate from ("read", "ɹɛd"), ("reed",
+-- "ɹid"), and ("red", "ɹɛd").
+data Rep
+  = Rep
+      { _text :: T.Text,
+        _pron :: Pronunciation
+      }
+  deriving (Eq, Show)
+
+-- | Rep is sorted by its text component (alphabetically, like a dictionary)
+instance Ord Rep where
+  compare r1 r2 = compare (_text r1) (_text r2)
 
 -- | A Definition is a meaning, an ontological unit of a dictionary.
 data Definition
@@ -53,7 +76,9 @@ data Definition
   deriving (Eq, Show)
 
 -- | an Entry associates a (text, pronunciation) pair with a list of
--- definitions.
+-- definitions. The structure of an Entry is how we should think about the data,
+-- even though the underlying representation in the map is slightly different.
+-- All Dictionary methods return Entries, not (rep, def) pairs.
 --
 -- Entries are compared based on their text, and they are evaluated for equality
 -- (uniqueness) based on their (text, pronunciation) pair.
@@ -73,10 +98,10 @@ instance Ord Entry where
 instance Eq Entry where
   e1 == e2 = text e1 == text e2 && pronunciation e1 == pronunciation e2
 
--- | fromList generates a Dictionary from a list of Entries. See
--- "Data.Set".'Set.fromList'
+-- | fromList generates a Dictionary from a list of Entries. Definitions are
+-- merged under unique (text, pronunciation) pairs.
 fromList :: [Entry] -> Dictionary
-fromList = Set.fromList
+fromList es = Map.fromListWith (++) (_toInternal <$> es)
 
 -- TODO: fix fromStringTuples to use a flat structure.
 -- Use the equality of entries to merge multiple definitions onto entries
@@ -90,23 +115,23 @@ fromStringTuples ts = fromList $ uncurriedMakeEntry <$> ts
 
 -- | first provides the first element of the Dictionary (by text, ascending)
 first :: Dictionary -> Entry
-first = Set.elemAt 0
+first = _entry . Map.elemAt 0
 
 -- | last provides the last element of the Dictionary (by text, ascending)
 last :: Dictionary -> Entry
-last d = Set.elemAt (size d - 1) d
+last d = _entry $ Map.elemAt (size d - 1) d
 
--- | the size of the dictionary. See "Data.Set".'Set.size'
+-- | the size of the dictionary. See "Data.Map".'Map.size'
 size :: Dictionary -> Int
-size = Set.size
+size = Map.size
 
 -- | next gives the next element of the Dictionary (alphabetically).
 -- Next wraps around the dictionary when given the last entry (it gives the
 -- first)
 next :: Dictionary -> Entry -> Entry
-next d entry = Set.elemAt i d
+next d entry = _entry $ Map.elemAt i d
   where
-    prevI = Set.findIndex entry d
+    prevI = Map.findIndex (_toRep entry) d
     i =
       if prevI == size d - 1
         then 0
@@ -116,9 +141,9 @@ next d entry = Set.elemAt i d
 -- Prev wraps around the dictionary when given the first entry (it gives the
 -- last)
 prev :: Dictionary -> Entry -> Entry
-prev d entry = Set.elemAt i d
+prev d entry = _entry $ Map.elemAt i d
   where
-    nextI = Set.findIndex entry d
+    nextI = Map.findIndex (_toRep entry) d
     i =
       if nextI == 0
         then size d - 1
@@ -129,7 +154,7 @@ prev d entry = Set.elemAt i d
 -- pronunciation), you can construct a mock entry containing just these
 -- elements.
 contains :: Dictionary -> Entry -> Bool
-contains d entry = Set.member entry d
+contains d e = Map.member (_toRep e) d
 
 -- TODO: add containsText and containsPron
 
@@ -143,7 +168,8 @@ contains d entry = Set.member entry d
 -- letter, Nothing is returned.
 firstOfLetter :: Dictionary -> Char -> Maybe Entry
 firstOfLetter d c =
-  let maybeE = Set.lookupGE (Entry (T.singleton c) [] []) d
+  let mockE = Rep {_text = T.singleton c, _pron = []}
+      maybeE = _entry <$> Map.lookupGE mockE d
    in case maybeE of
         Nothing -> Nothing
         Just e ->
@@ -159,4 +185,14 @@ makeEntry _text _defs _pronString =
   Entry _text defs (makePronunciation _pronString)
   where
     defs = uncurry Definition <$> _defs
+
 -- TODO: add makeEntry' that just takes 4 flat arguments
+
+_entry :: (Rep, [Definition]) -> Entry
+_entry (r, ds) = Entry (_text r) ds (_pron r)
+
+_toInternal :: Entry -> (Rep, [Definition])
+_toInternal e = (_toRep e, definitions e)
+
+_toRep :: Entry -> Rep
+_toRep e = Rep {_text = text e, _pron = pronunciation e}
