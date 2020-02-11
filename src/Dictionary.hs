@@ -1,5 +1,5 @@
 module Dictionary
-  ( Dictionary (..),
+  ( Dictionary,
     Entry (..),
     Definition (..),
     makeEntry,
