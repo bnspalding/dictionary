@@ -63,11 +63,15 @@ data Entry
         definitions :: [Definition], -- gloss, pos
         pronunciation :: Pronunciation -- same as Sound.Word, i.e. [Syl]
       }
-  deriving (Eq, Show)
+  deriving (Show)
 
---TODO: change Eq to work based on just (text, pronunciation)
+-- | Entries are ordered based on their text (alphabetically)
 instance Ord Entry where
   compare e1 e2 = compare (text e1) (text e2)
+
+-- | Entries are unique based on their (text, pronunciation) pair
+instance Eq Entry where
+  e1 == e2 = text e1 == text e2 && pronunciation e1 == pronunciation e2
 
 -- | fromList generates a Dictionary from a list of Entries. See
 -- "Data.Set".'Set.fromList'
