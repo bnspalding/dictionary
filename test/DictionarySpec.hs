@@ -13,15 +13,34 @@ spec = do
   describe "construction" $ do
     describe "makeEntry" $ do
       it "makes Entry from constituent components" $
-        makeEntry "test" [("an evaluation", "n"), ("to evaluate", "v")] ""
+        makeEntry
+          "test"
+          [ ("an evaluation", "n"),
+            ("to evaluate", "v")
+          ]
+          ""
           `shouldBe` mockEntryMultiDef
       it "accepts empty arguments" $
-        makeEntry "" [] "" `shouldBe` Entry "" [] []
+        makeEntry
+          ""
+          []
+          ""
+          `shouldBe` Entry "" [] []
     describe "makeEntry1" $ do
       it "makes Entry from constituent components" $
-        makeEntry1 "test" "an evaluation" "n" "" `shouldBe` mockEntrySingleDef
+        makeEntry1
+          "test"
+          "an evaluation"
+          "n"
+          ""
+          `shouldBe` mockEntrySingleDef
       it "accepts empty arguments" $
-        makeEntry1 "" "" "" "" `shouldBe` Entry "" [] []
+        makeEntry1
+          ""
+          ""
+          ""
+          ""
+          `shouldBe` Entry "" [] []
     describe "fromStringTuples" $ do
       it "creates a dictionary from text arguments" $
         size
@@ -40,7 +59,24 @@ spec = do
               ]
           )
           `shouldBe` 1
-    describe "fromList" $ it "has no tests" $ True `shouldBe` True
+    describe "fromList" $ do
+      it "creates a dictionary from a list of Entries" $
+        size
+          ( fromList
+              [ Entry "red" [] [],
+                Entry "reed" [] [],
+                Entry "read" [] []
+              ]
+          )
+          `shouldBe` 3
+      it "merges entries with the same representation" $
+        size
+          ( fromList
+              [ mockEntrySingleDef,
+                mockEntrySingleDef2
+              ]
+          )
+          `shouldBe` 1
   describe "methods" $ do
     describe "first" $ it "has no tests" $ True `shouldBe` True
     describe "last" $ it "has no tests" $ True `shouldBe` True
@@ -52,6 +88,9 @@ spec = do
 
 mockEntrySingleDef :: Entry
 mockEntrySingleDef = Entry "test" [mockDef1] []
+
+mockEntrySingleDef2 :: Entry
+mockEntrySingleDef2 = Entry "test" [mockDef2] []
 
 mockEntryMultiDef :: Entry
 mockEntryMultiDef = Entry "test" [mockDef1, mockDef2] []
