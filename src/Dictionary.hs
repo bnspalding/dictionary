@@ -176,7 +176,7 @@ firstOfLetter d c =
             else Nothing
 
 -- | makeEntry constructs an Entry out of its constituent components. makeEntry
--- takes a set of definitions as its second argument. Use makeEntry' to
+-- takes a set of definitions as its second argument. Use makeEntry1 to
 -- construct entries from single-definition, flat argument sets.
 makeEntry :: T.Text -> [(T.Text, T.Text)] -> T.Text -> Entry
 makeEntry _text _defs _pronString =
