@@ -22,7 +22,24 @@ spec = do
         makeEntry1 "test" "an evaluation" "n" "" `shouldBe` mockEntrySingleDef
       it "accepts empty arguments" $
         makeEntry1 "" "" "" "" `shouldBe` Entry "" [] []
-    describe "fromStringTuples" $ it "has no tests" $ True `shouldBe` True
+    describe "fromStringTuples" $ do
+      it "creates a dictionary from text arguments" $
+        size
+          ( fromStringTuples
+              [ ("read", "", "", ""),
+                ("red", "", "", ""),
+                ("reed", "", "", "")
+              ]
+          )
+          `shouldBe` 3
+      it "merges entries with the same representation" $
+        size
+          ( fromStringTuples
+              [ ("test", "an evaluation", "n", ""),
+                ("test", "to evaluate", "v", "")
+              ]
+          )
+          `shouldBe` 1
     describe "fromList" $ it "has no tests" $ True `shouldBe` True
   describe "methods" $ do
     describe "first" $ it "has no tests" $ True `shouldBe` True
