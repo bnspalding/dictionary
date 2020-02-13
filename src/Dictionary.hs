@@ -39,6 +39,7 @@ module Dictionary
 
     -- * Sub-Dictionaries
     subDict,
+    subPOS,
   )
 where
 
@@ -181,6 +182,18 @@ _maybe xs =
 -- of matching entries
 subDict :: Dictionary -> (Entry -> Bool) -> Dictionary
 subDict d f = Map.filterWithKey (\k v -> f (_entry (k, v))) d
+
+-- | subPOS provides the sub-dictionary where at least one definition for each
+-- entry is the given POS. For example,
+-- > subPOS d "n"
+-- will produce a subdictionary where each word has at least one definition with
+-- part of speech "n"
+--
+-- Note: this does not filter out definitions that do not match the given part
+-- of speech from each entry in the sub-dictionary
+subPOS :: Dictionary -> T.Text -> Dictionary
+subPOS d target =
+  subDict d (\e -> any (\def -> pos def == target) (Set.toList $ definitions e))
 
 -- | toList converts a Dictionary to a list of Entries.
 toList :: Dictionary -> [Entry]

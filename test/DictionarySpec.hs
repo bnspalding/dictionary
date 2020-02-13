@@ -144,15 +144,20 @@ spec = do
     describe "toList"
       $ it "converts a dictionary to a list"
       $ toList mockDict `shouldBe` [apple, banana, cherry, durian, fig]
-  describe "sub-dictionaries"
-    $ describe "subDict"
-    $ do
+  describe "sub-dictionaries" $ do
+    describe "subDict" $ do
       it "provides a sub-dictionary based on some entry predicate" $
         subDict mockDict (\e -> text e == "apple") `shouldBe` fromList [apple]
       it "provides the entire dictionary when given a tautology" $
         subDict mockDict (const True) `shouldBe` mockDict
       it "provides an empty dictionary when given a contradiction" $
         subDict mockDict (const False) `shouldBe` fromList []
+    describe "subPOS" $ do
+      it "provides a sub-dictionary based on a given part of speech" $
+        subPOS (fromList [apple, mockEntrySingleDef]) "n"
+          `shouldBe` fromList [mockEntrySingleDef]
+      it "provides an empty dictionary when no matches are present" $
+        subPOS mockDict "not a part of speech" `shouldBe` fromList []
 
 mockEntrySingleDef :: Entry
 mockEntrySingleDef = Entry "test" (Set.singleton mockDef1) []
