@@ -6,6 +6,12 @@ pair with a set of definitions, where each association forms an Entry. A
 dictionary, like the one you might find on your bookshelf, is ordered
 alphabetically by text.
 
+An Entry is a data structure that contains:
+
+- text - the textual representation of the entry
+- pronunciation - the spoken representation of the entry
+- definitions: - a set of (meaning, part of speech) pairs for the entry.
+
 The uniqueness of entries is based on their representation, which is their
 textual representation and spoken representation together. Some example entries
 might be:
@@ -18,7 +24,9 @@ might be:
 Each representational pair (text, pronunciation) points to a set of definitions.
 
 Pronunciation and sound-related information are represented using
-[bnspalding/sound](https://github.com/bnspalding/sound).
+[bnspalding/sound](https://github.com/bnspalding/sound). Pronunciations parse
+IPA symbols and represent sounds based on an approximation of the General 
+American English accent.
 
 Technical documentation for the library can be generated using haddock.
 
