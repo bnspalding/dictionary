@@ -82,9 +82,9 @@ spec = do
     describe "first"
       $ it "provides first element of a dictionary"
       $ first mockDict `shouldBe` apple
-    describe "last"
-      $ it "provides the last element of a dictionary"
-      $ Dictionary.last mockDict `shouldBe` fig
+    describe "final"
+      $ it "provides the final element of a dictionary"
+      $ final mockDict `shouldBe` fig
     describe "size"
       $ it "provides the number of elements in a dictionary"
       $ size mockDict `shouldBe` 5

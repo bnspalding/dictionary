@@ -9,8 +9,8 @@
 -- Dictionary is ordered alphabetically by text.
 --
 -- A special note about this representation of a dictionary: The 'next' and
--- 'prev' functions wrap around (such that the last element points to the first,
--- and the first element points to the last when using 'next' and 'prev'). This
+-- 'prev' functions wrap around (such that the final element points to the first,
+-- and the first element points to the final when using 'next' and 'prev'). This
 -- decision comes from the way that Dictionary is used in Sequence, Selection
 -- libraries farther up the ladder.
 module Dictionary
@@ -27,7 +27,7 @@ module Dictionary
 
     -- * Methods
     first,
-    Dictionary.last,
+    final,
     size,
     next,
     prev,
@@ -116,16 +116,16 @@ fromStringTuples ts = fromList $ uncurriedMakeEntry <$> ts
 first :: Dictionary -> Entry
 first = _entry . Map.elemAt 0
 
--- | last provides the last element of the Dictionary (by text, ascending)
-last :: Dictionary -> Entry
-last d = _entry $ Map.elemAt (size d - 1) d
+-- | final provides the final element of the Dictionary (by text, ascending)
+final :: Dictionary -> Entry
+final d = _entry $ Map.elemAt (size d - 1) d
 
 -- | the size of the dictionary. See "Data.Map".'Map.size'
 size :: Dictionary -> Int
 size = Map.size
 
 -- | next gives the next element of the Dictionary (alphabetically).
--- Next wraps around the dictionary when given the last entry (it gives the
+-- Next wraps around the dictionary when given the final entry (it gives the
 -- first)
 next :: Dictionary -> Entry -> Entry
 next d entry = _entry $ Map.elemAt i d
@@ -138,7 +138,7 @@ next d entry = _entry $ Map.elemAt i d
 
 -- | prev gives the previous element of the Dictionary (alphabetically).
 -- Prev wraps around the dictionary when given the first entry (it gives the
--- last)
+-- final entry)
 prev :: Dictionary -> Entry -> Entry
 prev d entry = _entry $ Map.elemAt i d
   where
