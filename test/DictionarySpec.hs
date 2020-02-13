@@ -130,6 +130,29 @@ spec = do
         contains mockDict cherry `shouldBe` True
       it "returns False when an entry is not present in the dictionary" $
         contains mockDict (makeEntry1 "zebra" "" "" "") `shouldBe` False
+    describe "lookupText" $ do
+      it "provides a list of entries whose text match the given text" $
+        lookupText mockDict "fig" `shouldBe` Just [fig]
+      it "returns Nothing when no elements match" $
+        lookupText mockDict "pig" `shouldBe` Nothing
+    describe "lookupPron" $ do
+      -- I don't want to import or mock Sound, so...
+      it "provides a list of entries whose pronunciation match the given pron" $
+        lookupPron mockDict [] `shouldBe` Just (toList mockDict)
+      it "returns Nothing when no elements match" $
+        lookupPron (fromList []) [] `shouldBe` Nothing
+    describe "toList"
+      $ it "converts a dictionary to a list"
+      $ toList mockDict `shouldBe` [apple, banana, cherry, durian, fig]
+  describe "sub-dictionaries"
+    $ describe "subDict"
+    $ do
+      it "provides a sub-dictionary based on some entry predicate" $
+        subDict mockDict (\e -> text e == "apple") `shouldBe` fromList [apple]
+      it "provides the entire dictionary when given a tautology" $
+        subDict mockDict (const True) `shouldBe` mockDict
+      it "provides an empty dictionary when given a contradiction" $
+        subDict mockDict (const False) `shouldBe` fromList []
 
 mockEntrySingleDef :: Entry
 mockEntrySingleDef = Entry "test" (Set.singleton mockDef1) []

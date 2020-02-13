@@ -33,6 +33,12 @@ module Dictionary
     prev,
     firstOfLetter,
     contains,
+    lookupText,
+    lookupPron,
+    toList,
+
+    -- * Sub-Dictionaries
+    subDict,
   )
 where
 
@@ -155,7 +161,30 @@ prev d entry = _entry $ Map.elemAt i d
 contains :: Dictionary -> Entry -> Bool
 contains d e = Map.member (_toRep e) d
 
--- TODO: add containsText and containsPron
+-- | lookupText provides a list of Entries whose text element matches the
+-- provided text. If there are no matches, Nothing is returned.
+lookupText :: Dictionary -> T.Text -> Maybe [Entry]
+lookupText d target = _maybe $ toList $ subDict d (\e -> text e == target)
+
+-- | lookupPron provides a list of Entries whose pronunciation element matches
+-- the provided pronunciation. If there are no matches, Nothing is returned.
+lookupPron :: Dictionary -> Pronunciation -> Maybe [Entry]
+lookupPron d target = _maybe $ toList $ subDict d (\e -> pronunciation e == target)
+
+_maybe :: [a] -> Maybe [a]
+_maybe xs =
+  if null xs
+    then Nothing
+    else Just xs
+
+-- | subDict filters the entries of a dictionary and returns the sub-dictionary
+-- of matching entries
+subDict :: Dictionary -> (Entry -> Bool) -> Dictionary
+subDict d f = Map.filterWithKey (\k v -> f (_entry (k, v))) d
+
+-- | toList converts a Dictionary to a list of Entries.
+toList :: Dictionary -> [Entry]
+toList d = _entry <$> Map.toList d
 
 -- becase lookupGE returns the first entry GE an entry with text "c"
 -- it is necessary to ensure the entry actually starts with c
