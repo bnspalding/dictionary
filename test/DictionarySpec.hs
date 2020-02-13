@@ -81,12 +81,32 @@ spec = do
     describe "first"
       $ it "provides first element of a dictionary"
       $ first mockDict `shouldBe` apple
-    describe "last" $ it "has no tests" $ True `shouldBe` True
-    describe "size" $ it "has no tests" $ True `shouldBe` True
-    describe "next" $ it "has no tests" $ True `shouldBe` True
-    describe "prev" $ it "has no tests" $ True `shouldBe` True
-    describe "firstOfLetter" $ it "has no tests" $ True `shouldBe` True
-    describe "contains" $ it "has no tests" $ True `shouldBe` True
+    describe "last"
+      $ it "provides the last element of a dictionary"
+      $ Dictionary.last mockDict `shouldBe` fig
+    describe "size"
+      $ it "provides the number of elements in a dictionary"
+      $ size mockDict `shouldBe` 5
+    describe "next" $ do
+      it "provides the next entry (alphabetically) in a dictionary" $
+        next mockDict apple `shouldBe` banana
+      it "wraps around when given the last element" $
+        next mockDict fig `shouldBe` apple
+    describe "prev" $ do
+      it "provides the previous entry (alphabetically) in a dictionary" $
+        prev mockDict cherry `shouldBe` banana
+      it "wraps around when given the first element" $
+        prev mockDict apple `shouldBe` fig
+    describe "firstOfLetter" $ do
+      it "provides the first element of a given character (a-z)" $
+        firstOfLetter mockDict 'd' `shouldBe` Just durian
+      it "returns Nothing when no elements of the given character exist" $
+        firstOfLetter mockDict 'z' `shouldBe` Nothing
+    describe "contains" $ do
+      it "returns True when an entry is present in the dictionary" $
+        contains mockDict cherry `shouldBe` True
+      it "returns False when an entry is not present in the dictionary" $
+        contains mockDict (makeEntry1 "zebra" "" "" "") `shouldBe` False
 
 mockEntrySingleDef :: Entry
 mockEntrySingleDef = Entry "test" [mockDef1] []
@@ -108,9 +128,9 @@ mockDict =
   fromList
     [ cherry,
       banana,
+      fig,
       apple,
-      durian,
-      fig
+      durian
     ]
 
 apple :: Entry
