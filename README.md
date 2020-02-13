@@ -13,8 +13,8 @@ An Entry is a data structure that contains:
 - definitions: - a set of (meaning, part of speech) pairs for the entry.
 
 The uniqueness of entries is based on their representation, which is their
-textual representation and spoken representation together. Some example entries
-might be:
+textual representation and spoken representation together. Some example
+representations that would each have a unique entry might be:
 
 - "read", "ɹid" (_I read the book_; present tense)
 - "read", "rɛd" (_I read the book_; past tense)
