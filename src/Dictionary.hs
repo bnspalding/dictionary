@@ -5,7 +5,7 @@
 -- Stability: experimental
 --
 -- A Dictionary is a set of lexical entries. It associates a ('text', 'pronunciation')
--- pair with list of 'Definition's, where each association is an 'Entry'. A
+-- pair with set of 'Definition's, where each association is an 'Entry'. A
 -- Dictionary is ordered alphabetically by text.
 --
 -- A special note about this representation of a dictionary: The 'next' and
@@ -77,7 +77,7 @@ data Definition
       }
   deriving (Eq, Ord, Show)
 
--- | an Entry associates a (text, pronunciation) pair with a list of
+-- | an Entry associates a (text, pronunciation) pair with a set of unique
 -- definitions. The structure of an Entry is how we should think about the data,
 -- even though the underlying representation in the map is slightly different.
 -- All Dictionary methods return Entries, not (rep, def) pairs.
@@ -105,7 +105,7 @@ instance Eq Entry where
 fromList :: [Entry] -> Dictionary
 fromList es = Map.fromListWith Set.union (_toInternal <$> es)
 
--- | fromStringTuples constructs a dictionary from a set of string tuples
+-- | fromStringTuples constructs a dictionary from a list of string tuples
 -- that are generated, for example, from parsing a file
 fromStringTuples :: [(T.Text, T.Text, T.Text, T.Text)] -> Dictionary
 fromStringTuples ts = fromList $ uncurriedMakeEntry <$> ts
@@ -177,7 +177,7 @@ firstOfLetter d c =
             else Nothing
 
 -- | makeEntry constructs an Entry out of its constituent components. makeEntry
--- takes a set of definitions as its second argument. Use makeEntry1 to
+-- takes a list of definitions as its second argument. Use makeEntry1 to
 -- construct entries from single-definition, flat argument sets.
 makeEntry :: T.Text -> [(T.Text, T.Text)] -> T.Text -> Entry
 makeEntry _text _defs _pronString =
