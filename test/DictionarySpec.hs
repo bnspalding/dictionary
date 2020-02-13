@@ -78,6 +78,28 @@ spec = do
               ]
           )
           `shouldBe` 1
+      it "joins definitions by union for the same representation" $
+        Set.size
+          ( definitions $
+              first
+                ( fromList
+                    [ mockEntrySingleDef,
+                      mockEntrySingleDef2
+                    ]
+                )
+          )
+          `shouldBe` 2
+      it "eliminates duplicate definitions within an entry" $
+        Set.size
+          ( definitions $
+              first
+                ( fromList
+                    [ mockEntryMultiDef,
+                      mockEntryMultiDef
+                    ]
+                )
+          )
+          `shouldBe` 2
   describe "methods" $ do
     describe "first"
       $ it "provides first element of a dictionary"
