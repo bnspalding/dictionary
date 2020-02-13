@@ -185,12 +185,17 @@ subDict d f = Map.filterWithKey (\k v -> f (_entry (k, v))) d
 
 -- | subPOS provides the sub-dictionary where at least one definition for each
 -- entry is the given POS. For example,
+--
 -- > subPOS d "n"
--- will produce a subdictionary where each word has at least one definition with
+--
+-- will produce a subdictionary of d where each word has at least one definition with
 -- part of speech "n"
 --
 -- Note: this does not filter out definitions that do not match the given part
--- of speech from each entry in the sub-dictionary
+-- of speech from each entry in the sub-dictionary. So an entry with multiple
+-- definitions will retain all of its definitions when it is reproduced in the
+-- sub-dictionary, even if only a subset of those definitions match the given
+-- part of speech.
 subPOS :: Dictionary -> T.Text -> Dictionary
 subPOS d target =
   subDict d (\e -> any (\def -> pos def == target) (Set.toList $ definitions e))
