@@ -5,6 +5,7 @@ module DictionarySpec
   )
 where
 
+import qualified Data.Set as Set
 import Dictionary
 import Test.Hspec
 
@@ -25,7 +26,7 @@ spec = do
           ""
           []
           ""
-          `shouldBe` Entry "" [] []
+          `shouldBe` Entry "" Set.empty []
     describe "makeEntry1" $ do
       it "makes Entry from constituent components" $
         makeEntry1
@@ -40,7 +41,7 @@ spec = do
           ""
           ""
           ""
-          `shouldBe` Entry "" [] []
+          `shouldBe` Entry "" Set.empty []
     describe "fromStringTuples" $ do
       it "creates a dictionary from text arguments" $
         size
@@ -63,9 +64,9 @@ spec = do
       it "creates a dictionary from a list of Entries" $
         size
           ( fromList
-              [ Entry "red" [] [],
-                Entry "reed" [] [],
-                Entry "read" [] []
+              [ Entry "red" Set.empty [],
+                Entry "reed" Set.empty [],
+                Entry "read" Set.empty []
               ]
           )
           `shouldBe` 3
@@ -109,13 +110,13 @@ spec = do
         contains mockDict (makeEntry1 "zebra" "" "" "") `shouldBe` False
 
 mockEntrySingleDef :: Entry
-mockEntrySingleDef = Entry "test" [mockDef1] []
+mockEntrySingleDef = Entry "test" (Set.singleton mockDef1) []
 
 mockEntrySingleDef2 :: Entry
-mockEntrySingleDef2 = Entry "test" [mockDef2] []
+mockEntrySingleDef2 = Entry "test" (Set.singleton mockDef2) []
 
 mockEntryMultiDef :: Entry
-mockEntryMultiDef = Entry "test" [mockDef1, mockDef2] []
+mockEntryMultiDef = Entry "test" (Set.fromList [mockDef1, mockDef2]) []
 
 mockDef1 :: Definition
 mockDef1 = Definition "an evaluation" "n"

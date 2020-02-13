@@ -37,6 +37,7 @@ module Dictionary
 where
 
 import qualified Data.Map as Map
+import qualified Data.Set as Set
 import qualified Data.Text as T
 import Sound.Pronunciation (Pronunciation, makePronunciation)
 
@@ -45,8 +46,8 @@ import Sound.Pronunciation (Pronunciation, makePronunciation)
 --
 -- A map is used to make sense of merging definitions to a representation. All
 -- dictionary methods wrap inputs and outputs in Entries, so there should never
--- be a need to work with the internal Rep, [Definition] map representation.
-type Dictionary = Map.Map Rep [Definition]
+-- be a need to work with the internal Rep, {Definition} map representation.
+type Dictionary = Map.Map Rep (Set.Set Definition)
 
 -- | Rep (short for Repesentation) is a (text, pronunciation) pair. Together
 -- with a set of definitions, it forms a dictionary entry. Most of the time, you
@@ -74,7 +75,7 @@ data Definition
         -- | pos gives the part of speech tied to the definition
         pos :: T.Text
       }
-  deriving (Eq, Show)
+  deriving (Eq, Ord, Show)
 
 -- | an Entry associates a (text, pronunciation) pair with a list of
 -- definitions. The structure of an Entry is how we should think about the data,
@@ -86,7 +87,7 @@ data Definition
 data Entry
   = Entry
       { text :: T.Text,
-        definitions :: [Definition], -- gloss, pos
+        definitions :: Set.Set Definition, -- gloss, pos
         pronunciation :: Pronunciation -- same as Sound.Word, i.e. [Syl]
       }
   deriving (Show)
@@ -102,7 +103,7 @@ instance Eq Entry where
 -- | fromList generates a Dictionary from a list of Entries. Definitions are
 -- merged under unique (text, pronunciation) pairs.
 fromList :: [Entry] -> Dictionary
-fromList es = Map.fromListWith (++) (_toInternal <$> es)
+fromList es = Map.fromListWith Set.union (_toInternal <$> es)
 
 -- | fromStringTuples constructs a dictionary from a set of string tuples
 -- that are generated, for example, from parsing a file
@@ -182,7 +183,7 @@ makeEntry :: T.Text -> [(T.Text, T.Text)] -> T.Text -> Entry
 makeEntry _text _defs _pronString =
   Entry _text defs (makePronunciation _pronString)
   where
-    defs = uncurry Definition <$> _defs
+    defs = Set.fromList $ uncurry Definition <$> _defs
 
 -- | makeEntry1 constructs an Entry with a single definition from its
 -- constituent elements. makeEntry1 can be used to generate Entries more simply.
@@ -190,12 +191,12 @@ makeEntry _text _defs _pronString =
 -- "Sound.Pronunciation".'Sound.Pronunciation.makePronunciation'.
 makeEntry1 :: T.Text -> T.Text -> T.Text -> T.Text -> Entry
 makeEntry1 _text _gloss _pos _pronString =
-  Entry _text [Definition _gloss _pos] (makePronunciation _pronString)
+  Entry _text (Set.fromList [Definition _gloss _pos]) (makePronunciation _pronString)
 
-_entry :: (Rep, [Definition]) -> Entry
+_entry :: (Rep, Set.Set Definition) -> Entry
 _entry (r, ds) = Entry (_text r) ds (_pron r)
 
-_toInternal :: Entry -> (Rep, [Definition])
+_toInternal :: Entry -> (Rep, Set.Set Definition)
 _toInternal e = (_toRep e, definitions e)
 
 _toRep :: Entry -> Rep
