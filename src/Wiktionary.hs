@@ -27,7 +27,8 @@ where
 
 import Dictionary
 
-type WiktData = undefined
+-- TODO: write WiktData record type
+data WiktData = WiktData
 
 fromJSON :: [WiktData] -> Dictionary
 fromJSON = undefined
