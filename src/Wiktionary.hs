@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 -- |
 -- Module: Wiktionary
 -- Copyright: (c) 2020 Ben Spalding (bnspalding.com)
@@ -25,10 +27,23 @@ module Wiktionary
   )
 where
 
+import qualified Data.Text as T
 import Dictionary
+import GHC.Generics
 
 -- TODO: write WiktData record type
-data WiktData = WiktData
+data WiktData
+  = WiktData
+      { word :: T.Text,
+        pos :: T.Text,
+        senses :: WiktSense,
+        pronunciations :: [WiktPron]
+      }
+  deriving (Generic, Show)
+
+data WiktSense = WiktSense {glosses :: [T.Text]} deriving (Generic, Show)
+
+data WiktPron = WiktPron {ipa :: T.Text} deriving (Generic, Show)
 
 fromJSON :: [WiktData] -> Dictionary
 fromJSON = undefined
