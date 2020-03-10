@@ -53,3 +53,5 @@ file in the repository.
 
 TODO: add hooks to wiktionary data
 
+TODO: removing cycling from next (which requires it to be Maybe Entry). use
+cycle . fromList to get an infinite cycle of the dictionary
