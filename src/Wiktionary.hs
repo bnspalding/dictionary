@@ -23,27 +23,44 @@
 -- a single pronunciation for each word in your data.
 module Wiktionary
   ( WiktData,
-    fromJSON,
+    readJSONSingle,
   )
 where
 
+import Data.Aeson
+import qualified Data.ByteString.Lazy as B
+import qualified Data.ByteString.Lazy.Char8 as C
 import qualified Data.Text as T
 import Dictionary
 import GHC.Generics
 
--- TODO: write WiktData record type
+-- TODO: write WiktData record type to actually fit with JSONL format
 data WiktData
   = WiktData
       { word :: T.Text,
         pos :: T.Text,
-        senses :: WiktSense,
+        senses :: [WiktSense],
         pronunciations :: [WiktPron]
       }
   deriving (Generic, Show)
 
+instance FromJSON WiktData
+
 data WiktSense = WiktSense {glosses :: [T.Text]} deriving (Generic, Show)
+
+instance FromJSON WiktSense
 
 data WiktPron = WiktPron {ipa :: T.Text} deriving (Generic, Show)
 
-fromJSON :: [WiktData] -> Dictionary
-fromJSON = undefined
+-- Note: will probably have to write a custom FromJSON to filter out non-ipa
+-- pronunciations
+instance FromJSON WiktPron
+
+-- Note: this probably won't work without thinking about UTF8 and char ecodings
+readJSONSingle :: B.ByteString -> Either String WiktData
+readJSONSingle = eitherDecode
+
+-- JSONL needs to be split into lines for Aeson to parse it
+-- Note: again, ByteString.Lazy.Char8 is probably not the right tool for UTF8
+readJSONL :: B.ByteString -> [Either String WiktData]
+readJSONL = fmap readJSONSingle . C.lines
