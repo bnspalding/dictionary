@@ -46,11 +46,11 @@ data WiktData
 
 instance FromJSON WiktData
 
-data WiktSense = WiktSense {glosses :: [T.Text]} deriving (Generic, Show)
+newtype WiktSense = WiktSense {glosses :: [T.Text]} deriving (Generic, Show)
 
 instance FromJSON WiktSense
 
-data WiktPron = WiktPron {ipa :: T.Text} deriving (Generic, Show)
+newtype WiktPron = WiktPron {ipa :: T.Text} deriving (Generic, Show)
 
 -- Note: will probably have to write a custom FromJSON to filter out non-ipa
 -- pronunciations
