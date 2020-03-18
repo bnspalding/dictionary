@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
 
 -- |
 -- Module: Wiktionary
@@ -28,17 +27,15 @@ module Wiktionary
   )
 where
 
-import Control.Monad
 import Data.Aeson
 import Data.Aeson.Types
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Lazy.Char8 as C
 import Data.Either
 import qualified Data.Text as T
-import qualified Data.Text.IO as TIO
+import qualified Data.Text.IO as TIO -- testing only
 import Dictionary
-import GHC.Generics
-import System.Environment
+import System.Environment -- testing only
 
 --Note: rather than defining fromJSON, we parse in readJSONSingle because
 --there's some weird parsing for senses and pronunciations, so it's just easier
@@ -52,9 +49,12 @@ data WiktData
       }
   deriving (Show)
 
--- Note: I have not yet figured out why glosses is a list. There seems to be one
--- gloss per sense in the small subset of entries I have examined thus far.
-newtype WiktSense = WiktSense {gloss :: T.Text} deriving (Show)
+data WiktSense
+  = WiktSense
+      { gloss :: T.Text,
+        tags :: [T.Text]
+      }
+  deriving (Show)
 
 data WiktPron
   = WiktPron
@@ -74,8 +74,11 @@ readJSONSingle input = do
           flip parseEither s $ \sVal ->
             flip (withObject "WiktSense") sVal $ \sObj -> do
               glosses <- sObj .: "glosses"
+              -- tags are an optional field. An empty list is used when none are
+              -- present
+              tags <- sObj .:? "tags" .!= []
               -- glosses are "usually only one" (wiktextract)
-              return $ WiktSense $ head glosses
+              return $ WiktSense (head glosses) tags
     _pronunciations <- o .: "pronunciations" :: Parser [Value]
     let pronunciations = flip fmap _pronunciations $ \p ->
           flip parseEither p $ \pVal ->
@@ -85,7 +88,7 @@ readJSONSingle input = do
               -- ipa in JSON has structure [["en", "ipa"]] (weird)
               -- using (!!) because I want to see failures when they happen
               let ipa = (!! 1) . head $ _ipa
-              return WiktPron {..}
+              return $ WiktPron accent ipa
     -- Note: we filter out senses and pronunciations that fail to parse using
     -- Data.Either.rights
     return $ WiktData word pos (rights senses) (rights pronunciations)
