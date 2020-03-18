@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 -- |
 -- Module: Wiktionary
@@ -27,12 +28,16 @@ module Wiktionary
   )
 where
 
+import Control.Monad
 import Data.Aeson
+import Data.Aeson.Types
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Lazy.Char8 as C
+import Data.Either
 import qualified Data.Text as T
 import Dictionary
 import GHC.Generics
+import System.Environment
 
 -- TODO: write WiktData record type to actually fit with JSONL format
 data WiktData
@@ -42,25 +47,38 @@ data WiktData
         senses :: [WiktSense],
         pronunciations :: [WiktPron]
       }
-  deriving (Generic, Show)
-
-instance FromJSON WiktData
+  deriving (Show)
 
 newtype WiktSense = WiktSense {glosses :: [T.Text]} deriving (Generic, Show)
 
 instance FromJSON WiktSense
 
-newtype WiktPron = WiktPron {ipa :: T.Text} deriving (Generic, Show)
-
--- Note: will probably have to write a custom FromJSON to filter out non-ipa
--- pronunciations
-instance FromJSON WiktPron
+newtype WiktPron = WiktPron {ipa :: [[T.Text]]} deriving (Show)
 
 -- Note: this probably won't work without thinking about UTF8 and char ecodings
 readJSONSingle :: B.ByteString -> Either String WiktData
-readJSONSingle = eitherDecode
+readJSONSingle input = do
+  result <- eitherDecode input
+  flip parseEither result $ \o -> do
+    word <- o .: "word"
+    pos <- o .: "pos"
+    senses <- o .: "senses"
+    _pronunciations <- o .: "pronunciations" :: Parser [Value]
+    let pronunciations = flip fmap _pronunciations $ \p ->
+          flip parseEither p $ \pVal ->
+            flip (withObject "WiktPron") pVal $ \pObj -> do
+              ipa <- pObj .: "ipa"
+              return $ WiktPron ipa
+    return $ WiktData word pos senses (rights pronunciations)
 
 -- JSONL needs to be split into lines for Aeson to parse it
 -- Note: again, ByteString.Lazy.Char8 is probably not the right tool for UTF8
 readJSONL :: B.ByteString -> [Either String WiktData]
 readJSONL = fmap readJSONSingle . C.lines
+
+-- These are just for testing in ghci right now
+wiktData :: IO B.ByteString
+wiktData = B.readFile =<< getEnv "WIKTDATA"
+
+wFirst :: IO (Either String WiktData)
+wFirst = readJSONSingle . head . C.lines <$> wiktData
