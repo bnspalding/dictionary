@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 -- |
 -- Module: Wiktionary
@@ -55,7 +56,12 @@ data WiktData
 -- gloss per sense in the small subset of entries I have examined thus far.
 newtype WiktSense = WiktSense {gloss :: T.Text} deriving (Show)
 
-newtype WiktPron = WiktPron {ipa :: T.Text} deriving (Show)
+data WiktPron
+  = WiktPron
+      { accent :: [T.Text],
+        ipa :: T.Text
+      }
+  deriving (Show)
 
 readJSONSingle :: B.ByteString -> Either String WiktData
 readJSONSingle input = do
@@ -74,11 +80,12 @@ readJSONSingle input = do
     let pronunciations = flip fmap _pronunciations $ \p ->
           flip parseEither p $ \pVal ->
             flip (withObject "WiktPron") pVal $ \pObj -> do
-              ipa <- pObj .: "ipa"
+              _ipa <- pObj .: "ipa"
+              accent <- pObj .: "accent"
               -- ipa in JSON has structure [["en", "ipa"]] (weird)
               -- using (!!) because I want to see failures when they happen
-              -- TODO: use pronunciation's "accent" field to prefer "GenAm"
-              return $ WiktPron $ (!! 1) . head $ ipa
+              let ipa = (!! 1) . head $ _ipa
+              return WiktPron {..}
     -- Note: we filter out senses and pronunciations that fail to parse using
     -- Data.Either.rights
     return $ WiktData word pos (rights senses) (rights pronunciations)
