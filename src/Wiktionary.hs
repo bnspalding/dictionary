@@ -35,6 +35,7 @@ import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Lazy.Char8 as C
 import Data.Either
 import qualified Data.Text as T
+import qualified Data.Text.IO as TIO
 import Dictionary
 import GHC.Generics
 import System.Environment
@@ -49,10 +50,14 @@ data WiktData
       }
   deriving (Show)
 
+-- Note: I have not yet figured out why glosses is a list. There seems to be one
+-- gloss per sense in the small subset of entries I have examined thus far.
 newtype WiktSense = WiktSense {glosses :: [T.Text]} deriving (Generic, Show)
 
 instance FromJSON WiktSense
 
+-- Note: ipa is a double list because it sometimes looks like
+-- "[["en", "/pɔːɹtˈmæntoʊ/"]]". This will need to be cleaned up.
 newtype WiktPron = WiktPron {ipa :: [[T.Text]]} deriving (Show)
 
 -- Note: this probably won't work without thinking about UTF8 and char ecodings
@@ -72,13 +77,18 @@ readJSONSingle input = do
     return $ WiktData word pos senses (rights pronunciations)
 
 -- JSONL needs to be split into lines for Aeson to parse it
--- Note: again, ByteString.Lazy.Char8 is probably not the right tool for UTF8
 readJSONL :: B.ByteString -> [Either String WiktData]
 readJSONL = fmap readJSONSingle . C.lines
 
 -- These are just for testing in ghci right now
 wiktData :: IO B.ByteString
-wiktData = B.readFile =<< getEnv "WIKTDATA"
+wiktData = B.readFile =<< getEnv "WIKTDATA_UTF8"
 
 wFirst :: IO (Either String WiktData)
 wFirst = readJSONSingle . head . C.lines <$> wiktData
+
+-- Note: unicode encoding is working fine. You just need to use TIO for it to
+-- display properly (as opposed to the way it works in show)
+printPron :: IO ()
+printPron =
+  TIO.putStrLn . either T.pack ((!! 1) . head . ipa . head . pronunciations) =<< wFirst
