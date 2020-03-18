@@ -40,7 +40,6 @@ import Dictionary
 import GHC.Generics
 import System.Environment
 
--- TODO: write WiktData record type to actually fit with JSONL format
 data WiktData
   = WiktData
       { word :: T.Text,
@@ -56,11 +55,8 @@ newtype WiktSense = WiktSense {glosses :: [T.Text]} deriving (Generic, Show)
 
 instance FromJSON WiktSense
 
--- Note: ipa is a double list because it sometimes looks like
--- "[["en", "/pɔːɹtˈmæntoʊ/"]]". This will need to be cleaned up.
-newtype WiktPron = WiktPron {ipa :: [[T.Text]]} deriving (Show)
+newtype WiktPron = WiktPron {ipa :: T.Text} deriving (Show)
 
--- Note: this probably won't work without thinking about UTF8 and char ecodings
 readJSONSingle :: B.ByteString -> Either String WiktData
 readJSONSingle input = do
   result <- eitherDecode input
@@ -73,14 +69,17 @@ readJSONSingle input = do
           flip parseEither p $ \pVal ->
             flip (withObject "WiktPron") pVal $ \pObj -> do
               ipa <- pObj .: "ipa"
-              return $ WiktPron ipa
+              -- ipa in JSON has structure [["en", "ipa"]] (weird)
+              -- using (!!) because I want to see failures when they happen
+              -- TODO: use pronunciation's "accent" field to prefer "GenAm"
+              return $ WiktPron $ (!! 1) . head $ ipa
     return $ WiktData word pos senses (rights pronunciations)
 
 -- JSONL needs to be split into lines for Aeson to parse it
 readJSONL :: B.ByteString -> [Either String WiktData]
 readJSONL = fmap readJSONSingle . C.lines
 
--- These are just for testing in ghci right now
+-- These are just for testing in ghci right now ------------------------
 wiktData :: IO B.ByteString
 wiktData = B.readFile =<< getEnv "WIKTDATA_UTF8"
 
@@ -91,4 +90,4 @@ wFirst = readJSONSingle . head . C.lines <$> wiktData
 -- display properly (as opposed to the way it works in show)
 printPron :: IO ()
 printPron =
-  TIO.putStrLn . either T.pack ((!! 1) . head . ipa . head . pronunciations) =<< wFirst
+  TIO.putStrLn . either T.pack (ipa . head . pronunciations) =<< wFirst
