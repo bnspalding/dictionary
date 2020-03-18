@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
@@ -40,6 +39,9 @@ import Dictionary
 import GHC.Generics
 import System.Environment
 
+--Note: rather than defining fromJSON, we parse in readJSONSingle because
+--there's some weird parsing for senses and pronunciations, so it's just easier
+--to parse there rather than use two different methods (parse vs fromJSON)
 data WiktData
   = WiktData
       { word :: T.Text,
@@ -51,9 +53,7 @@ data WiktData
 
 -- Note: I have not yet figured out why glosses is a list. There seems to be one
 -- gloss per sense in the small subset of entries I have examined thus far.
-newtype WiktSense = WiktSense {glosses :: [T.Text]} deriving (Generic, Show)
-
-instance FromJSON WiktSense
+newtype WiktSense = WiktSense {gloss :: T.Text} deriving (Show)
 
 newtype WiktPron = WiktPron {ipa :: T.Text} deriving (Show)
 
@@ -63,7 +63,13 @@ readJSONSingle input = do
   flip parseEither result $ \o -> do
     word <- o .: "word"
     pos <- o .: "pos"
-    senses <- o .: "senses"
+    _senses <- o .: "senses" :: Parser [Value]
+    let senses = flip fmap _senses $ \s ->
+          flip parseEither s $ \sVal ->
+            flip (withObject "WiktSense") sVal $ \sObj -> do
+              glosses <- sObj .: "glosses"
+              -- glosses are "usually only one" (wiktextract)
+              return $ WiktSense $ head glosses
     _pronunciations <- o .: "pronunciations" :: Parser [Value]
     let pronunciations = flip fmap _pronunciations $ \p ->
           flip parseEither p $ \pVal ->
@@ -73,7 +79,9 @@ readJSONSingle input = do
               -- using (!!) because I want to see failures when they happen
               -- TODO: use pronunciation's "accent" field to prefer "GenAm"
               return $ WiktPron $ (!! 1) . head $ ipa
-    return $ WiktData word pos senses (rights pronunciations)
+    -- Note: we filter out senses and pronunciations that fail to parse using
+    -- Data.Either.rights
+    return $ WiktData word pos (rights senses) (rights pronunciations)
 
 -- JSONL needs to be split into lines for Aeson to parse it
 readJSONL :: B.ByteString -> [Either String WiktData]
