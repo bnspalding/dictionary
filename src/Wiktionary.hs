@@ -19,11 +19,14 @@
 -- set that comprises the dictionary will be slightly different.
 --
 -- Pronunciations are interpreted using the General American English accent (See
--- "Dictionary" for more information. When processing data, be sure to pre-select
--- a single pronunciation for each word in your data.
+-- "Dictionary" for more information. When there are multiple pronunciations for
+-- a word, the General American accent pronunciation (if it exists) will be
+-- preferred.
 module Wiktionary
   ( WiktData,
     readJSONSingle,
+    readJSONL,
+    makeDictionary,
   )
 where
 
@@ -32,9 +35,11 @@ import Data.Aeson.Types
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Lazy.Char8 as C
 import Data.Either
+import Data.List (find)
+import Data.Maybe (maybe)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO -- testing only
-import Dictionary
+import qualified Dictionary as D (Dictionary, Entry, fromList, makeEntry)
 import System.Environment -- testing only
 
 --Note: rather than defining fromJSON, we parse in readJSONSingle because
@@ -97,6 +102,18 @@ readJSONSingle input = do
 readJSONL :: B.ByteString -> [Either String WiktData]
 readJSONL = fmap readJSONSingle . C.lines
 
+makeDictionary :: [WiktData] -> D.Dictionary
+makeDictionary = D.fromList . fmap wiktDataToEntry
+
+wiktDataToEntry :: WiktData -> D.Entry
+wiktDataToEntry w = D.makeEntry (word w) defs (selectPron $ pronunciations w)
+  where
+    defs = zip (gloss <$> senses w) (repeat $ pos w)
+
+selectPron :: [WiktPron] -> T.Text
+selectPron ps =
+  maybe (ipa $ head ps) ipa $ find (elem "GenAm" . accent) ps
+
 -- These are just for testing in ghci right now ------------------------
 wiktData :: IO B.ByteString
 wiktData = B.readFile =<< getEnv "WIKTDATA_UTF8"
@@ -109,3 +126,8 @@ wFirst = readJSONSingle . head . C.lines <$> wiktData
 printPron :: IO ()
 printPron =
   TIO.putStrLn . either T.pack (ipa . head . pronunciations) =<< wFirst
+-- wiktDataToEntry . (\ (Either e) -> e) <$> wFirst
+--
+-- TODO: more symbols need to be added to Sound ipa symbol parsing (such as '/')
+-- TODO: dig into what percentage of the json data is parsing correctly.
+-- TODO: add tests
