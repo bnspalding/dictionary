@@ -50,6 +50,3 @@ The following methods are defined for working with dictionaries:
 
 See the [LICENSE](https://github.com/bnspalding/dictionary/blob/master/LICENSE)
 file in the repository.
-
-TODO: removing cycling from next (which requires it to be Maybe Entry). use
-cycle . fromList to get an infinite cycle of the dictionary

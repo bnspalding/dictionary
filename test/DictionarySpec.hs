@@ -112,14 +112,14 @@ spec = do
       $ size mockDict `shouldBe` 5
     describe "next" $ do
       it "provides the next entry (alphabetically) in a dictionary" $
-        next mockDict apple `shouldBe` banana
-      it "wraps around when given the last element" $
-        next mockDict fig `shouldBe` apple
+        next mockDict apple `shouldBe` Just banana
+      it "returns Nothing when given the last element" $
+        next mockDict fig `shouldBe` Nothing
     describe "prev" $ do
       it "provides the previous entry (alphabetically) in a dictionary" $
-        prev mockDict cherry `shouldBe` banana
-      it "wraps around when given the first element" $
-        prev mockDict apple `shouldBe` fig
+        prev mockDict cherry `shouldBe` Just banana
+      it "returns Nothing when given the first element" $
+        prev mockDict apple `shouldBe` Nothing
     describe "firstOfLetter" $ do
       it "provides the first element of a given character (a-z)" $
         firstOfLetter mockDict 'd' `shouldBe` Just durian

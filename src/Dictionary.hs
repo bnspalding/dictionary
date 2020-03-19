@@ -133,28 +133,18 @@ size :: Dictionary -> Int
 size = Map.size
 
 -- | next gives the next element of the Dictionary (alphabetically).
--- Next wraps around the dictionary when given the final entry (it gives the
--- first)
-next :: Dictionary -> Entry -> Entry
-next d entry = _entry $ Map.elemAt i d
-  where
-    prevI = Map.findIndex (_toRep entry) d
-    i =
-      if prevI == size d - 1
-        then 0
-        else prevI + 1
+-- next returns Nothing when it is the last entry in the dicitionary.
+next :: Dictionary -> Entry -> Maybe Entry
+next d entry =
+  let mockR = Rep {_text = text entry, _pron = []}
+   in _entry <$> Map.lookupGT mockR d
 
 -- | prev gives the previous element of the Dictionary (alphabetically).
--- Prev wraps around the dictionary when given the first entry (it gives the
--- final entry)
-prev :: Dictionary -> Entry -> Entry
-prev d entry = _entry $ Map.elemAt i d
-  where
-    nextI = Map.findIndex (_toRep entry) d
-    i =
-      if nextI == 0
-        then size d - 1
-        else nextI - 1
+-- prev returns Nothing when it is the first entry in the dictionary.
+prev :: Dictionary -> Entry -> Maybe Entry
+prev d entry =
+  let mockR = Rep {_text = text entry, _pron = []}
+   in _entry <$> Map.lookupLT mockR d
 
 -- | contains reports whether the Dictionary contains a (text, pronunciation)
 -- entry. Note that because equality for Entries is based only on (text,
