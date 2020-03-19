@@ -27,6 +27,9 @@ module Wiktionary
     readJSONSingle,
     readJSONL,
     makeDictionary,
+    wiktData,
+    wFirst,
+    printPron,
   )
 where
 
@@ -36,7 +39,7 @@ import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Lazy.Char8 as C
 import Data.Either
 import Data.List (find)
-import Data.Maybe (maybe)
+import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO -- testing only
 import qualified Dictionary as D (Dictionary, Entry, fromList, makeEntry)
@@ -72,31 +75,31 @@ readJSONSingle :: B.ByteString -> Either String WiktData
 readJSONSingle input = do
   result <- eitherDecode input
   flip parseEither result $ \o -> do
-    word <- o .: "word"
-    pos <- o .: "pos"
-    _senses <- o .: "senses" :: Parser [Value]
-    let senses = flip fmap _senses $ \s ->
+    _word <- o .: "word"
+    _pos <- o .: "pos"
+    _senses' <- o .: "senses" :: Parser [Value]
+    let _senses = flip fmap _senses' $ \s ->
           flip parseEither s $ \sVal ->
             flip (withObject "WiktSense") sVal $ \sObj -> do
-              glosses <- sObj .: "glosses"
+              _glosses <- sObj .: "glosses"
               -- tags are an optional field. An empty list is used when none are
               -- present
-              tags <- sObj .:? "tags" .!= []
+              _tags <- sObj .:? "tags" .!= []
               -- glosses are "usually only one" (wiktextract)
-              return $ WiktSense (head glosses) tags
-    _pronunciations <- o .: "pronunciations" :: Parser [Value]
-    let pronunciations = flip fmap _pronunciations $ \p ->
+              return $ WiktSense (head _glosses) _tags
+    _pronunciations' <- o .: "pronunciations" :: Parser [Value]
+    let _pronunciations = flip fmap _pronunciations' $ \p ->
           flip parseEither p $ \pVal ->
             flip (withObject "WiktPron") pVal $ \pObj -> do
-              _ipa <- pObj .: "ipa"
-              accent <- pObj .: "accent"
+              _ipa' <- pObj .: "ipa"
+              _accent <- pObj .: "accent"
               -- ipa in JSON has structure [["en", "ipa"]] (weird)
               -- using (!!) because I want to see failures when they happen
-              let ipa = (!! 1) . head $ _ipa
-              return $ WiktPron accent ipa
+              let _ipa = (!! 1) . head $ _ipa'
+              return $ WiktPron _accent _ipa
     -- Note: we filter out senses and pronunciations that fail to parse using
     -- Data.Either.rights
-    return $ WiktData word pos (rights senses) (rights pronunciations)
+    return $ WiktData _word _pos (rights _senses) (rights _pronunciations)
 
 -- JSONL needs to be split into lines for Aeson to parse it
 readJSONL :: B.ByteString -> [Either String WiktData]
@@ -112,7 +115,7 @@ wiktDataToEntry w = D.makeEntry (word w) defs (selectPron $ pronunciations w)
 
 selectPron :: [WiktPron] -> T.Text
 selectPron ps =
-  maybe (ipa $ head ps) ipa $ find (elem "GenAm" . accent) ps
+  ipa $ fromMaybe (head ps) $ find (elem "GenAm" . accent) ps
 
 -- These are just for testing in ghci right now ------------------------
 wiktData :: IO B.ByteString
