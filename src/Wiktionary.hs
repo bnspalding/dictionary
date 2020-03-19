@@ -65,6 +65,9 @@ import System.Environment -- testing only
 -- "readJSONSingle". This is because of some weird parsing that has to happen
 -- for pronunciations (which lack a consistent schema), and it just made sense
 -- to do the rest of the parsing there as well (for consistency).
+--
+-- NOTE: many wiktionary entries lack pronunciations. It may be better to make
+-- pronunciations optional
 data WiktData
   = WiktData
       { word :: T.Text,
@@ -171,6 +174,9 @@ printPron =
   TIO.putStrLn . either T.pack (ipa . head . pronunciations) =<< wFirst
 -- wiktDataToEntry . (\ (Either e) -> e) <$> wFirst
 --
+--NOTE: There are approximately 860,000 entries in wiktionary that do not have
+--pronunciation fields (around 70,000 that do). Consider pulling in something
+--like CMUinIPA to fill in some of those cases where there's no pronunciation.
+--
 -- TODO: more symbols need to be added to Sound ipa symbol parsing (such as '/')
--- TODO: dig into what percentage of the json data is parsing correctly.
 -- TODO: add tests
