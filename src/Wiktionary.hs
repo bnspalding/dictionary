@@ -2,6 +2,7 @@
 
 -- |
 -- Module: Wiktionary
+-- Description: extracted JSONL to Dictionary
 -- Copyright: (c) 2020 Ben Spalding (bnspalding.com)
 -- License: MIT
 -- Stability: experimental
@@ -23,10 +24,20 @@
 -- a word, the General American accent pronunciation (if it exists) will be
 -- preferred.
 module Wiktionary
-  ( WiktData,
+  ( -- * Types
+    WiktData (..),
+    WiktSense (..),
+    WiktPron (..),
+
+    -- * From JSONL
     readJSONSingle,
     readJSONL,
+
+    -- * To Dictionary
     makeDictionary,
+    wiktDataToEntry,
+
+    -- * Testing
     wiktData,
     wFirst,
     printPron,
@@ -45,9 +56,15 @@ import qualified Data.Text.IO as TIO -- testing only
 import qualified Dictionary as D (Dictionary, Entry, fromList, makeEntry)
 import System.Environment -- testing only
 
---Note: rather than defining fromJSON, we parse in readJSONSingle because
---there's some weird parsing for senses and pronunciations, so it's just easier
---to parse there rather than use two different methods (parse vs fromJSON)
+-- | WiktData represents a useful subset of the information that describes a word on
+-- Wiktionary. An entry in Wiktionary is a single word (written form) and part
+-- of speech together with a set of meanings (senses) and a set of
+-- pronunciations.
+--
+-- Rather than make WiktData an instance of FromJSON, parsing happens in
+-- "readJSONSingle". This is because of some weird parsing that has to happen
+-- for pronunciations (which lack a consistent schema), and it just made sense
+-- to do the rest of the parsing there as well (for consistency).
 data WiktData
   = WiktData
       { word :: T.Text,
@@ -57,6 +74,11 @@ data WiktData
       }
   deriving (Show)
 
+-- | WiktSense represents a meaning for a word. The fields here are a selective
+-- subset of what comes with the original data. The gloss is the written meaning
+-- or definition that describes the sense. Tags are a list of qualifiers and
+-- categorical descriptors for the sense (such as \'colloqial\', \'present\', or
+-- \'chemistry\').
 data WiktSense
   = WiktSense
       { gloss :: T.Text,
@@ -64,6 +86,11 @@ data WiktSense
       }
   deriving (Show)
 
+-- | WiktPron represents a pronunciation for a word. While there are several
+-- different representations used on Wiktionary for a pronunciation (IPA, enPR),
+-- the parsed results here are limited to IPA representations. Each
+-- pronunciation is associated with one or more accents (GenAm, Canadian,
+-- Received Pronunciation).
 data WiktPron
   = WiktPron
       { accent :: [T.Text],
@@ -71,6 +98,8 @@ data WiktPron
       }
   deriving (Show)
 
+-- | readJSONSingle expects a single JSON object (as a ByteString) and parses it
+-- as "WiktData" (wrapped in an Either, where Left reports on a failed parse)
 readJSONSingle :: B.ByteString -> Either String WiktData
 readJSONSingle input = do
   result <- eitherDecode input
@@ -101,13 +130,20 @@ readJSONSingle input = do
     -- Data.Either.rights
     return $ WiktData _word _pos (rights _senses) (rights _pronunciations)
 
--- JSONL needs to be split into lines for Aeson to parse it
+-- | readJSONL expects a set of line-separated JSON objects (as a ByteString)
+-- and parses each one into a WiktData object. See "readJSONSingle".
 readJSONL :: B.ByteString -> [Either String WiktData]
 readJSONL = fmap readJSONSingle . C.lines
 
+-- | makeDictionary constructs a "Dictionary" out of list of WiktData objects
 makeDictionary :: [WiktData] -> D.Dictionary
 makeDictionary = D.fromList . fmap wiktDataToEntry
 
+-- | wiktDataToEntry transforms a WiktData object into an Entry.
+--
+-- Because an Entry takes a single text, pronunciation pair and a set of
+-- definitions (gloss, pos), a single pronunciation is chosen (GenAm if it
+-- exists) and the pos is mapped across all glosses.
 wiktDataToEntry :: WiktData -> D.Entry
 wiktDataToEntry w = D.makeEntry (word w) defs (selectPron $ pronunciations w)
   where
@@ -118,14 +154,18 @@ selectPron ps =
   ipa $ fromMaybe (head ps) $ find (elem "GenAm" . accent) ps
 
 -- These are just for testing in ghci right now ------------------------
+
+-- | wiktData is the JSONL formatted wiktionary data, read as a ByteString. The
+-- data is read from the WIKTDATA_UTF8 environment variable.
 wiktData :: IO B.ByteString
 wiktData = B.readFile =<< getEnv "WIKTDATA_UTF8"
 
+-- | wFirst is the first entry from wiktData, parsed
 wFirst :: IO (Either String WiktData)
 wFirst = readJSONSingle . head . C.lines <$> wiktData
 
--- Note: unicode encoding is working fine. You just need to use TIO for it to
--- display properly (as opposed to the way it works in show)
+-- | printPron prints the pronunciation for wFirst, demonstrating it handles
+-- weird ipa unicode characters correctly.
 printPron :: IO ()
 printPron =
   TIO.putStrLn . either T.pack (ipa . head . pronunciations) =<< wFirst

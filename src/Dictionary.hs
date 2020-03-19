@@ -1,5 +1,6 @@
 -- |
 -- Module: Dictionary
+-- Description: a set of lexical entries
 -- Copyright: (c) 2019 Ben Spalding (bnspalding.com)
 -- License: MIT
 -- Stability: experimental
@@ -61,8 +62,8 @@ type Dictionary = Map.Map Rep (Set.Set Definition)
 -- should be working with Entries, rather than Reps.
 --
 -- For example,
--- ("read", "ɹid") is a unique pair separate from ("read", "ɹɛd"), ("reed",
--- "ɹid"), and ("red", "ɹɛd").
+-- (\"read\", \"ɹid\") is a unique pair separate from (\"read\", \"ɹɛd\"), (\"reed\",
+-- \"ɹid\"), and (\"red\", \"ɹɛd\").
 data Rep
   = Rep
       { _text :: T.Text,
