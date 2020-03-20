@@ -75,7 +75,7 @@ data WiktData
         senses :: [WiktSense],
         pronunciations :: [WiktPron]
       }
-  deriving (Show)
+  deriving (Eq, Show)
 
 -- | WiktSense represents a meaning for a word. The fields here are a selective
 -- subset of what comes with the original data. The gloss is the written meaning
@@ -87,7 +87,7 @@ data WiktSense
       { gloss :: T.Text,
         tags :: [T.Text]
       }
-  deriving (Show)
+  deriving (Eq, Show)
 
 -- | WiktPron represents a pronunciation for a word. While there are several
 -- different representations used on Wiktionary for a pronunciation (IPA, enPR),
@@ -99,7 +99,7 @@ data WiktPron
       { accent :: [T.Text],
         ipa :: T.Text
       }
-  deriving (Show)
+  deriving (Eq, Show)
 
 -- | readJSONSingle expects a single JSON object (as a ByteString) and parses it
 -- as "WiktData" (wrapped in an Either, where Left reports on a failed parse)
