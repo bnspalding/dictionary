@@ -152,9 +152,13 @@ wiktDataToEntry w = D.makeEntry (word w) defs (selectPron $ pronunciations w)
   where
     defs = zip (gloss <$> senses w) (repeat $ pos w)
 
+-- TODO: fix [WiktPron] input so that we never have an empty list. In the
+-- meantime, this if-then fix will suffice
 selectPron :: [WiktPron] -> T.Text
 selectPron ps =
-  ipa $ fromMaybe (head ps) $ find (elem "GenAm" . accent) ps
+  if null ps
+    then ""
+    else ipa $ fromMaybe (head ps) $ find (elem "GenAm" . accent) ps
 
 -- These are just for testing in ghci right now ------------------------
 
@@ -172,7 +176,8 @@ wFirst = readJSONSingle . head . C.lines <$> wiktData
 printPron :: IO ()
 printPron =
   TIO.putStrLn . either T.pack (ipa . head . pronunciations) =<< wFirst
--- wiktDataToEntry . (\ (Either e) -> e) <$> wFirst
+--
+-- use toList . makeDictionary . rights . readJSONL <$> wiktData to test ipa
 --
 --NOTE: There are approximately 860,000 entries in wiktionary that do not have
 --pronunciation fields (around 70,000 that do). Consider pulling in something
