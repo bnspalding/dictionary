@@ -94,6 +94,10 @@ data WiktSense
 -- the parsed results here are limited to IPA representations. Each
 -- pronunciation is associated with one or more accents (GenAm, Canadian,
 -- Received Pronunciation).
+--
+-- Note: not all wiktionary entries have an accent associated with the
+-- pronunciation. When an accent is not present, it is assumed to be "GenAm"
+-- (this choice is convenience-based).
 data WiktPron
   = WiktPron
       { accent :: [T.Text],
@@ -124,7 +128,7 @@ readJSONSingle input = do
           flip parseEither p $ \pVal ->
             flip (withObject "WiktPron") pVal $ \pObj -> do
               _ipa' <- pObj .: "ipa"
-              _accent <- pObj .: "accent"
+              _accent <- pObj .:? "accent" .!= ["GenAm"]
               -- ipa in JSON has structure [["en", "ipa"]] (weird)
               -- using (!!) because I want to see failures when they happen
               let _ipa = (!! 1) . head $ _ipa'
@@ -152,13 +156,8 @@ wiktDataToEntry w = D.makeEntry (word w) defs (selectPron $ pronunciations w)
   where
     defs = zip (gloss <$> senses w) (repeat $ pos w)
 
--- TODO: fix [WiktPron] input so that we never have an empty list. In the
--- meantime, this if-then fix will suffice
 selectPron :: [WiktPron] -> T.Text
-selectPron ps =
-  if null ps
-    then ""
-    else ipa $ fromMaybe (head ps) $ find (elem "GenAm" . accent) ps
+selectPron ps = ipa $ fromMaybe (head ps) $ find (elem "GenAm" . accent) ps
 
 -- These are just for testing in ghci right now ------------------------
 
