@@ -125,6 +125,12 @@ spec = do
           `shouldBe` fromList [mockEntrySingleDef]
       it "provides an empty dictionary when no matches are present" $
         subPOS mockDict "not a part of speech" `shouldBe` fromList []
+    describe "subXTags" $ do
+      it "provides a sub-dictionary where entries are filtered on tags" $
+        subXTags (fromList [zebra, trumpet]) ["animal", "other tag"]
+          `shouldBe` fromList [trumpet]
+      it "provides an empty dictionary when no matches are present" $
+        subXTags (fromList [zebra]) ["animal"] `shouldBe` fromList []
 
 mockEntrySingleDef :: Entry
 mockEntrySingleDef = Entry "test" (Set.singleton mockDef1) []
@@ -167,4 +173,7 @@ fig :: Entry
 fig = Entry "fig" Set.empty []
 
 zebra :: Entry
-zebra = Entry "zebra" Set.empty []
+zebra = Entry "zebra" (Set.singleton (Definition "a test zebra" "n" ["animal"])) []
+
+trumpet :: Entry
+trumpet = Entry "trumpet" (Set.singleton (Definition "a test trumpet" "n" [])) []

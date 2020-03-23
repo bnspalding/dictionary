@@ -39,6 +39,7 @@ module Dictionary
     -- * Sub-Dictionaries
     subDict,
     subPOS,
+    subXTags,
   )
 where
 
@@ -161,6 +162,8 @@ _maybe xs =
     then Nothing
     else Just xs
 
+-- TODO: make subDictStrict that strips entries of non-matching definitions
+
 -- | subDict filters the entries of a dictionary and returns the sub-dictionary
 -- of matching entries
 subDict :: Dictionary -> (Entry -> Bool) -> Dictionary
@@ -182,6 +185,21 @@ subDict d f = Map.filterWithKey (\k v -> f (_entry (k, v))) d
 subPOS :: Dictionary -> T.Text -> Dictionary
 subPOS d target =
   subDict d (\e -> any (\def -> pos def == target) (Set.toList $ definitions e))
+
+-- | subXTags provides a sub-dictionary where an entry has been removed if all
+-- of its definitions contain at least one of the given tags. For example,
+--
+--  > subXTags d ["informal", "humorous", "offensive"]
+--
+--  will produce a subdictionary of d where each word has at least one
+--  definition that does not contain any of the supplied tags.
+--
+--  Note: this does not filter out definitions that contain the tags, so long as
+--  there is at least one other definition for the word that does not contain
+--  the tags.
+subXTags :: Dictionary -> [T.Text] -> Dictionary
+subXTags d xTags =
+  subDict d (\e -> not $ all (\def -> any (`elem` tags def) xTags) (Set.toList $ definitions e))
 
 -- | toList converts a Dictionary to a list of Entries.
 toList :: Dictionary -> [Entry]
