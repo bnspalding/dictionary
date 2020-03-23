@@ -29,10 +29,26 @@ printPron =
   TIO.putStrLn . either T.pack (ipa . head . pronunciations) =<< wFirst
 
 testIPA :: IO [Entry]
-testIPA = toList . flip subXTags filterTags . makeDictionary . rights . readJSONL <$> wiktData
+testIPA = toList . subXPOS . flip subXTags filterTags . makeDictionary . rights . readJSONL <$> wiktData
 
 filterTags :: [T.Text]
-filterTags = ["offensive", "derogatory", "informal", "Singlish", "humorous"]
---NOTE: There are approximately 860,000 entries in wiktionary that do not have
---pronunciation fields (around 70,000 that do). Consider pulling in something
---like CMUinIPA to fill in some of those cases where there's no pronunciation.
+filterTags =
+  [ "offensive",
+    "derogatory",
+    "informal",
+    "Singlish",
+    "humorous",
+    "vulgar",
+    "colloquial",
+    "ethnic slur",
+    "religious slur",
+    "informal"
+  ]
+
+filterPOSs :: [T.Text]
+filterPOSs = ["name"]
+
+subXPOS :: Dictionary -> Dictionary
+subXPOS = flip subDict $ \e ->
+  not $
+    all (\s -> Dictionary.pos s `elem` filterPOSs) (definitions e)
