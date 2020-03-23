@@ -135,7 +135,10 @@ readJSONSingle input = do
               return $ WiktPron _accent _ipa
     -- Note: we filter out senses and pronunciations that fail to parse using
     -- Data.Either.rights
-    return $ WiktData _word _pos (rights _senses) (rights _pronunciations)
+    let checkedProns = rights _pronunciations
+    if null checkedProns
+      then fail $ "no appropriate pronunciations for " ++ T.unpack _word
+      else return $ WiktData _word _pos (rights _senses) (rights _pronunciations)
 
 -- | readJSONL expects a set of line-separated JSON objects (as a ByteString)
 -- and parses each one into a WiktData object. See "readJSONSingle".
