@@ -36,11 +36,6 @@ module Wiktionary
     -- * To Dictionary
     makeDictionary,
     wiktDataToEntry,
-
-    -- * Testing
-    wiktData,
-    wFirst,
-    printPron,
   )
 where
 
@@ -52,9 +47,7 @@ import Data.Either
 import Data.List (find)
 import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
-import qualified Data.Text.IO as TIO -- testing only
 import qualified Dictionary as D (Dictionary, Entry, fromList, makeEntry)
-import System.Environment -- testing only
 
 -- | WiktData represents a useful subset of the information that describes a word on
 -- Wiktionary. An entry in Wiktionary is a single word (written form) and part
@@ -161,26 +154,6 @@ wiktDataToEntry w = D.makeEntry (word w) defs (selectPron $ pronunciations w)
 
 selectPron :: [WiktPron] -> T.Text
 selectPron ps = ipa $ fromMaybe (head ps) $ find (elem "GenAm" . accent) ps
-
--- These are just for testing in ghci right now ------------------------
-
--- | wiktData is the JSONL formatted wiktionary data, read as a ByteString. The
--- data is read from the WIKTDATA_UTF8 environment variable.
-wiktData :: IO B.ByteString
-wiktData = B.readFile =<< getEnv "WIKTDATA_UTF8"
-
--- | wFirst is the first entry from wiktData, parsed
-wFirst :: IO (Either String WiktData)
-wFirst = readJSONSingle . head . C.lines <$> wiktData
-
--- | printPron prints the pronunciation for wFirst, demonstrating it handles
--- weird ipa unicode characters correctly.
-printPron :: IO ()
-printPron =
-  TIO.putStrLn . either T.pack (ipa . head . pronunciations) =<< wFirst
---
--- use toList . makeDictionary . rights . readJSONL <$> wiktData to test ipa
---
 --NOTE: There are approximately 860,000 entries in wiktionary that do not have
 --pronunciation fields (around 70,000 that do). Consider pulling in something
 --like CMUinIPA to fill in some of those cases where there's no pronunciation.
