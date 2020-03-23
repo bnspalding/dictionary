@@ -157,7 +157,7 @@ makeDictionary = D.fromList . fmap wiktDataToEntry
 wiktDataToEntry :: WiktData -> D.Entry
 wiktDataToEntry w = D.makeEntry (word w) defs (selectPron $ pronunciations w)
   where
-    defs = zip (gloss <$> senses w) (repeat $ pos w)
+    defs = (\s -> (gloss s, pos w, tags s)) <$> senses w
 
 selectPron :: [WiktPron] -> T.Text
 selectPron ps = ipa $ fromMaybe (head ps) $ find (elem "GenAm" . accent) ps

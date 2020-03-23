@@ -22,8 +22,6 @@ module Dictionary
 
     -- * Construction
     makeEntry,
-    makeEntry1,
-    fromStringTuples,
     fromList,
 
     -- * Methods
@@ -81,7 +79,8 @@ data Definition
       { -- | gloss gives the textual definition for a word
         gloss :: T.Text,
         -- | pos gives the part of speech tied to the definition
-        pos :: T.Text
+        pos :: T.Text,
+        tags :: [T.Text]
       }
   deriving (Eq, Ord, Show)
 
@@ -112,13 +111,6 @@ instance Eq Entry where
 -- merged under unique (text, pronunciation) pairs.
 fromList :: [Entry] -> Dictionary
 fromList es = Map.fromListWith Set.union (_toInternal <$> es)
-
--- | fromStringTuples constructs a dictionary from a list of string tuples
--- that are generated, for example, from parsing a file
-fromStringTuples :: [(T.Text, T.Text, T.Text, T.Text)] -> Dictionary
-fromStringTuples ts = fromList $ uncurriedMakeEntry <$> ts
-  where
-    uncurriedMakeEntry (t, d, p, pr) = makeEntry1 t d p pr
 
 -- | first provides the first element of the Dictionary (by text, ascending)
 first :: Dictionary -> Entry
@@ -217,19 +209,11 @@ firstOfLetter d c =
 -- | makeEntry constructs an Entry out of its constituent components. makeEntry
 -- takes a list of definitions as its second argument. Use makeEntry1 to
 -- construct entries from single-definition, flat argument sets.
-makeEntry :: T.Text -> [(T.Text, T.Text)] -> T.Text -> Entry
+makeEntry :: T.Text -> [(T.Text, T.Text, [T.Text])] -> T.Text -> Entry
 makeEntry _text _defs _pronString =
   Entry _text defs (makePronunciation _pronString)
   where
-    defs = Set.fromList $ uncurry Definition <$> _defs
-
--- | makeEntry1 constructs an Entry with a single definition from its
--- constituent elements. makeEntry1 can be used to generate Entries more simply.
--- It generates the pronunciation for the entry from an IPA symbol string using
--- "Sound.Pronunciation".'Sound.Pronunciation.makePronunciation'.
-makeEntry1 :: T.Text -> T.Text -> T.Text -> T.Text -> Entry
-makeEntry1 _text _gloss _pos _pronString =
-  Entry _text (Set.fromList [Definition _gloss _pos]) (makePronunciation _pronString)
+    defs = Set.fromList $ (\(g, p, ts) -> Definition g p ts) <$> _defs
 
 _entry :: (Rep, Set.Set Definition) -> Entry
 _entry (r, ds) = Entry (_text r) ds (_pron r)

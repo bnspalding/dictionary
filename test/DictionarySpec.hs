@@ -16,8 +16,8 @@ spec = do
       it "makes Entry from constituent components" $
         makeEntry
           "test"
-          [ ("an evaluation", "n"),
-            ("to evaluate", "v")
+          [ ("an evaluation", "n", []),
+            ("to evaluate", "v", [])
           ]
           ""
           `shouldBe` mockEntryMultiDef
@@ -27,39 +27,6 @@ spec = do
           []
           ""
           `shouldBe` Entry "" Set.empty []
-    describe "makeEntry1" $ do
-      it "makes Entry from constituent components" $
-        makeEntry1
-          "test"
-          "an evaluation"
-          "n"
-          ""
-          `shouldBe` mockEntrySingleDef
-      it "accepts empty arguments" $
-        makeEntry1
-          ""
-          ""
-          ""
-          ""
-          `shouldBe` Entry "" Set.empty []
-    describe "fromStringTuples" $ do
-      it "creates a dictionary from text arguments" $
-        size
-          ( fromStringTuples
-              [ ("read", "", "", ""),
-                ("red", "", "", ""),
-                ("reed", "", "", "")
-              ]
-          )
-          `shouldBe` 3
-      it "merges entries with the same representation" $
-        size
-          ( fromStringTuples
-              [ ("test", "an evaluation", "n", ""),
-                ("test", "to evaluate", "v", "")
-              ]
-          )
-          `shouldBe` 1
     describe "fromList" $ do
       it "creates a dictionary from a list of Entries" $
         size
@@ -129,7 +96,7 @@ spec = do
       it "returns True when an entry is present in the dictionary" $
         contains mockDict cherry `shouldBe` True
       it "returns False when an entry is not present in the dictionary" $
-        contains mockDict (makeEntry1 "zebra" "" "" "") `shouldBe` False
+        contains mockDict zebra `shouldBe` False
     describe "lookupText" $ do
       it "provides a list of entries whose text match the given text" $
         lookupText mockDict "fig" `shouldBe` Just [fig]
@@ -169,10 +136,10 @@ mockEntryMultiDef :: Entry
 mockEntryMultiDef = Entry "test" (Set.fromList [mockDef1, mockDef2]) []
 
 mockDef1 :: Definition
-mockDef1 = Definition "an evaluation" "n"
+mockDef1 = Definition "an evaluation" "n" []
 
 mockDef2 :: Definition
-mockDef2 = Definition "to evaluate" "v"
+mockDef2 = Definition "to evaluate" "v" []
 
 mockDict :: Dictionary
 mockDict =
@@ -185,16 +152,19 @@ mockDict =
     ]
 
 apple :: Entry
-apple = makeEntry1 "apple" "" "" ""
+apple = Entry "apple" Set.empty []
 
 banana :: Entry
-banana = makeEntry1 "banana" "" "" ""
+banana = Entry "banana" Set.empty []
 
 cherry :: Entry
-cherry = makeEntry1 "cherry" "" "" ""
+cherry = Entry "cherry" Set.empty []
 
 durian :: Entry
-durian = makeEntry1 "durian" "" "" ""
+durian = Entry "durian" Set.empty []
 
 fig :: Entry
-fig = makeEntry1 "fig" "" "" ""
+fig = Entry "fig" Set.empty []
+
+zebra :: Entry
+zebra = Entry "zebra" Set.empty []

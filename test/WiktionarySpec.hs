@@ -128,8 +128,8 @@ mockEntry :: D.Entry
 mockEntry =
   D.makeEntry
     "test"
-    [ ("this is a test with a tag", "noun"),
-      ("this is a test with no tag", "noun")
+    [ ("this is a test with a tag", "noun", ["testy"]),
+      ("this is a test with no tag", "noun", [])
     ]
     "tɛst"
 
@@ -138,22 +138,22 @@ mockDict =
   D.fromList
     [ ( D.makeEntry
           "testA"
-          [ ("A:this is a test with a tag", "noun"),
-            ("A:this is a test with no tag", "noun")
+          [ ("A:this is a test with a tag", "noun", ["A:testy"]),
+            ("A:this is a test with no tag", "noun", [])
           ]
           "tɛst"
       ),
       ( D.makeEntry
           "testB"
-          [ ("B:this is a test with a tag", "verb"),
-            ("B:this is a test with no tag", "verb")
+          [ ("B:this is a test with a tag", "verb", ["B:testy"]),
+            ("B:this is a test with no tag", "verb", [])
           ]
           "tɛst"
       ),
       ( D.makeEntry
           "testC"
-          [ ("C:this is a test with a tag", "noun"),
-            ("C:this is a test with no tag", "noun")
+          [ ("C:this is a test with a tag", "noun", ["C:some testy"]),
+            ("C:this is a test with no tag", "noun", [])
           ]
           "tɛst"
       )
