@@ -45,7 +45,7 @@ import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Lazy.Char8 as C
 import Data.Either
 import Data.List (find)
-import Data.Maybe (fromMaybe)
+import Data.Maybe
 import qualified Data.Text as T
 import qualified Dictionary as D (Dictionary, Entry, fromList, makeEntry)
 
@@ -120,18 +120,23 @@ readJSONSingle input = do
     let _pronunciations = flip fmap _pronunciations' $ \p ->
           flip parseEither p $ \pVal ->
             flip (withObject "WiktPron") pVal $ \pObj -> do
-              _ipa' <- pObj .: "ipa"
+              _ipa' <- pObj .: "ipa" :: Parser [[T.Text]]
               _accent <- pObj .:? "accent" .!= ["GenAm"]
-              -- ipa in JSON has structure [["en", "ipa"]] (weird)
+              -- ipa in JSON has structure [["en", "ipa"]] (see [1])
               -- using (!!) because I want to see failures when they happen
-              let _ipa = (!! 1) . head $ _ipa'
-              return $ WiktPron _accent _ipa
+              let _ipaMaybe = find ((== "en") . head) _ipa'
+              if isNothing _ipaMaybe
+                then fail "no en pronunciations"
+                else return $ WiktPron _accent ((!! 1) (fromJust _ipaMaybe))
     -- Note: we filter out senses and pronunciations that fail to parse using
     -- Data.Either.rights
     let checkedProns = rights _pronunciations
     if null checkedProns
       then fail $ "no appropriate pronunciations for " ++ T.unpack _word
       else return $ WiktData _word _pos (rights _senses) (rights _pronunciations)
+
+-- Note [1]: the "en" distinguishes an anglicised pronunciation from, for
+-- example, Irish Gaelic ("ga"). See https://en.wiktionary.org/wiki/Ceann_Comhairle
 
 -- | readJSONL expects a set of line-separated JSON objects (as a ByteString)
 -- and parses each one into a WiktData object. See "readJSONSingle".
@@ -152,10 +157,30 @@ wiktDataToEntry w = D.makeEntry (word w) defs (selectPron $ pronunciations w)
   where
     defs = (\s -> (gloss s, pos w, tags s)) <$> senses w
 
+-- TODO: rewrite this. It's not selecting as expected, because pronunciations
+-- are both {accent: RP, ipa: [[en, pron]]} and {accent [genam, canadian], ipa
+-- [[en, genam_ipa], [en, canadian_ipa]]} (also remember that non "en"
+-- pronunciations are being filtered out in parsing. However, other entries
+-- separate US and UK (for example) as different objects (see "aircraft"). Be
+-- prepared to handle both formats.
+-- use (ipas !!) <$> findIndex (Genam ... to get either Genam pron or nothing
+-- from index associated lists
 selectPron :: [WiktPron] -> T.Text
-selectPron ps = ipa $ fromMaybe (head ps) $ find (elem "GenAm" . accent) ps
+selectPron ps = ipa $ head $ catMaybes [genAm, genAm', us, def]
+  where
+    genAm = find (elem "GenAm" . accent) ps
+    genAm' = find (elem "GA" . accent) ps
+    us = find (elem "US" . accent) ps
+    -- add more "find ..." as needed
+    def = Just (head ps)
 --NOTE: There are approximately 860,000 entries in wiktionary that do not have
 --pronunciation fields (around 70,000 that do). Consider pulling in something
 --like CMUinIPA to fill in some of those cases where there's no pronunciation.
 --
+--NOTE: Wiktionary pronunciations are a mess. See words with multiple prons, ex.
+--"dictionary", where a single pronunciation object has {accents:
+--["uk", "us"], ipa: [["en", "uk_pronunciation"], ["en", "us_pronunciation"]]},
+--where the index of the accent corresponds to the index of the ipa
+--pronunciation. This differs from "RP", which comes as a separate object in the
+--pronunciation list.
 -- TODO: more symbols need to be added to Sound ipa symbol parsing (such as '/')

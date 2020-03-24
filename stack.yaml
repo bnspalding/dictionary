@@ -10,6 +10,6 @@ rebuild-ghc-options: true
 
 extra-deps:
   - github: bnspalding/sound
-    commit: 649368158324d108c338af51a3eb83b98a545928
+    commit: 0ab7738506ed4b3479b089b2e4e7b9ea2cf40f9b
   - text-replace-0.0.0.4@sha256:88800aba160dfb512cf43b24063170d34900e1646ad21f28715a22679f42ae15,1738
   - haskell-src-exts-1.23.0@sha256:1bb9f7e97d569e56973133cb075fdcc1bfd11f90d94b035b5cf44814bb39a73d,4541

@@ -28,27 +28,38 @@ printPron :: IO ()
 printPron =
   TIO.putStrLn . either T.pack (ipa . head . pronunciations) =<< wFirst
 
-testIPA :: IO [Entry]
-testIPA = toList . subXPOS . flip subXTags filterTags . makeDictionary . rights . readJSONL <$> wiktData
+testIPA :: Char -> IO [Entry]
+testIPA c = toList . subXPOS . flip subXTags filterTags . flip subStartsWith c . makeDictionary . rights . readJSONL <$> wiktData
 
 filterTags :: [T.Text]
 filterTags =
   [ "offensive",
     "derogatory",
     "informal",
+    "spoken",
+    "imitating Irish accent",
     "Singlish",
+    "Braille",
     "humorous",
     "vulgar",
     "colloquial",
     "ethnic slur",
     "religious slur",
-    "informal"
+    "informal",
+    "slang",
+    "archaic",
+    "rare",
+    "obsolete",
+    "Singapore"
   ]
 
 filterPOSs :: [T.Text]
-filterPOSs = ["name"]
+filterPOSs = ["name", "prefix", "suffix", "phrase"]
 
 subXPOS :: Dictionary -> Dictionary
 subXPOS = flip subDict $ \e ->
   not $
     all (\s -> Dictionary.pos s `elem` filterPOSs) (definitions e)
+
+subStartsWith :: Dictionary -> Char -> Dictionary
+subStartsWith d c = subDict d $ (== c) . T.head . text
