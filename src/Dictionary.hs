@@ -177,10 +177,23 @@ _maybe xs =
 -- In my work with Wiktionary, here are some of the filters that I apply to the
 -- data:
 --
--- subXTags d [\"offensive\", \"derogatory\", \"informal\", \"spoken\",
--- \"imitating Irish accent\", \"Singlish\", \"Braille\", \"humorous\", \"vulgar\",
--- \"colloquial\", \"ethnic slur\", \"religious slur\", \"informal\", \"slang\",
--- \"archaic\", \"rare\", \"obsolete\", \"Singapore\"]
+-- By Tag:
+--
+-- > subXTags d ["offensive", "derogatory", "informal", "spoken",
+-- > "imitating Irish accent", "Singlish", "Braille", "humorous", "vulgar",
+-- > "colloquial", "ethnic slur", "religious slur", "informal", "slang",
+-- > "archaic", "rare", "obsolete", "Singapore"]
+--
+-- By Word:
+--
+-- > subDict d (`elem` ["my filter words"] . text)
+--
+-- By Definitions: (at least one definition is clear of filter words)
+--
+-- > subDict d ( any (null . `intersect` ["my filter words"] . words) . Set.toList . definitions)
+--
+-- alternatively, use all instead of any or isInfixOf instead of intersect .
+-- words to make this more strict
 
 -- | subDict filters the entries of a dictionary and returns the sub-dictionary
 -- of matching entries
