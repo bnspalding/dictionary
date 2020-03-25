@@ -91,6 +91,7 @@ data WiktSense
 -- Note: not all wiktionary entries have an accent associated with the
 -- pronunciation. When an accent is not present, it is assumed to be "GenAm"
 -- (this choice is convenience-based).
+-- TODO: accent should be singular T.Text
 data WiktPron
   = WiktPron
       { accent :: [T.Text],
@@ -117,12 +118,14 @@ readJSONSingle input = do
               -- glosses are "usually only one" (wiktextract)
               return $ WiktSense (head _glosses) _tags
     _pronunciations' <- o .: "pronunciations" :: Parser [Value]
+    -- TODO: when #[_ipa] == #[_accent], use index correspondance to select best
+    -- otherwise, accent and ipa should be singular
     let _pronunciations = flip fmap _pronunciations' $ \p ->
           flip parseEither p $ \pVal ->
             flip (withObject "WiktPron") pVal $ \pObj -> do
               _ipa' <- pObj .: "ipa" :: Parser [[T.Text]]
               _accent <- pObj .:? "accent" .!= ["GenAm"]
-              -- ipa in JSON has structure [["en", "ipa"]] (see [1])
+              -- ipa in JSON has structure [["lang", "ipa"]] (see [1])
               -- using (!!) because I want to see failures when they happen
               let _ipaMaybe = find ((== "en") . head) _ipa'
               if isNothing _ipaMaybe
@@ -137,6 +140,9 @@ readJSONSingle input = do
 
 -- Note [1]: the "en" distinguishes an anglicised pronunciation from, for
 -- example, Irish Gaelic ("ga"). See https://en.wiktionary.org/wiki/Ceann_Comhairle
+-- Be aware that often, "en" is used for the French pronunciations of French
+-- loanwords, shadowing better anglicised pronunciations that would be
+-- preferred.
 
 -- | readJSONL expects a set of line-separated JSON objects (as a ByteString)
 -- and parses each one into a WiktData object. See "readJSONSingle".
@@ -157,7 +163,7 @@ wiktDataToEntry w = D.makeEntry (word w) defs (selectPron $ pronunciations w)
   where
     defs = (\s -> (gloss s, pos w, tags s)) <$> senses w
 
--- TODO: rewrite this. It's not selecting as expected, because pronunciations
+-- TODO: rewrite selectPron. It's not (entirely) selecting as expected, because prons
 -- are both {accent: RP, ipa: [[en, pron]]} and {accent [genam, canadian], ipa
 -- [[en, genam_ipa], [en, canadian_ipa]]} (also remember that non "en"
 -- pronunciations are being filtered out in parsing. However, other entries
@@ -183,4 +189,3 @@ selectPron ps = ipa $ head $ catMaybes [genAm, genAm', us, def]
 --where the index of the accent corresponds to the index of the ipa
 --pronunciation. This differs from "RP", which comes as a separate object in the
 --pronunciation list.
--- TODO: more symbols need to be added to Sound ipa symbol parsing (such as '/')

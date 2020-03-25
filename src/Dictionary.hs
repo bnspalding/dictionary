@@ -71,6 +71,8 @@ data Rep
   deriving (Eq, Show)
 
 -- | Rep is sorted by its text component (alphabetically, like a dictionary)
+-- TODO: rewrite Rep's compare to work on lower case versions of text (so that 'A' is
+-- not separate from 'a'
 instance Ord Rep where
   compare r1 r2 = compare (_text r1) (_text r2)
 
@@ -163,6 +165,8 @@ _maybe xs =
     else Just xs
 
 -- TODO: make subDictStrict that strips entries of non-matching definitions
+-- TODO: write some general filtering guidelines (a standard suggested set of
+-- filters to use) as a section doc
 
 -- | subDict filters the entries of a dictionary and returns the sub-dictionary
 -- of matching entries
