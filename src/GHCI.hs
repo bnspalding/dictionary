@@ -31,8 +31,6 @@ printPron =
 testIPA :: IO [Entry]
 testIPA = toList . subXPOS . flip subXTags filterTags . makeDictionary . rights . readJSONL <$> wiktData
 
--- TODO: move these basic filter tags into the documentation for subXTags as a
--- set of default suggestions;
 filterTags :: [T.Text]
 filterTags =
   [ "offensive",

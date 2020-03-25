@@ -37,6 +37,8 @@ module Dictionary
     toList,
 
     -- * Sub-Dictionaries
+    --
+    -- $filtering
     subDict,
     subPOS,
     subXTags,
@@ -165,8 +167,20 @@ _maybe xs =
     else Just xs
 
 -- TODO: make subDictStrict that strips entries of non-matching definitions
--- TODO: write some general filtering guidelines (a standard suggested set of
--- filters to use) as a section doc
+
+-- $filtering
+-- Sub-dictionaries can be constructed to filter a set of entries according to
+-- some predicate. 'subDict' can produce arbitrary sub-dictionaries according to
+-- a given predicate for entries to satisfy. 'subXTags' and 'subPOS' are
+-- convenience functions built on top of 'subDict'.
+--
+-- In my work with Wiktionary, here are some of the filters that I apply to the
+-- data:
+--
+-- subXTags d [\"offensive\", \"derogatory\", \"informal\", \"spoken\",
+-- \"imitating Irish accent\", \"Singlish\", \"Braille\", \"humorous\", \"vulgar\",
+-- \"colloquial\", \"ethnic slur\", \"religious slur\", \"informal\", \"slang\",
+-- \"archaic\", \"rare\", \"obsolete\", \"Singapore\"]
 
 -- | subDict filters the entries of a dictionary and returns the sub-dictionary
 -- of matching entries
