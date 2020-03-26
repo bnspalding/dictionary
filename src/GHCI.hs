@@ -28,8 +28,11 @@ printPron :: IO ()
 printPron =
   TIO.putStrLn . either T.pack (ipa . head . pronunciations) =<< wFirst
 
+wiktdict :: IO Dictionary
+wiktdict = subXPOS . flip subXTags filterTags . makeDictionary . rights . readJSONL <$> wiktData
+
 testIPA :: IO [Entry]
-testIPA = toList . subXPOS . flip subXTags filterTags . makeDictionary . rights . readJSONL <$> wiktData
+testIPA = toList <$> wiktdict
 
 filterTags :: [T.Text]
 filterTags =

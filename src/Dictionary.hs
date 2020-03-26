@@ -45,6 +45,7 @@ module Dictionary
   )
 where
 
+import qualified Data.Char as C
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import qualified Data.Text as T
@@ -73,10 +74,8 @@ data Rep
   deriving (Eq, Show)
 
 -- | Rep is sorted by its text component (alphabetically, like a dictionary)
--- TODO: rewrite Rep's compare to work on lower case versions of text (so that 'A' is
--- not separate from 'a'
 instance Ord Rep where
-  compare r1 r2 = compare (_text r1) (_text r2)
+  compare r1 r2 = compare (T.toLower (_text r1)) (T.toLower (_text r2))
 
 -- | A Definition is a meaning, an ontological unit of a dictionary.
 data Definition
@@ -246,12 +245,12 @@ toList d = _entry <$> Map.toList d
 -- letter, Nothing is returned.
 firstOfLetter :: Dictionary -> Char -> Maybe Entry
 firstOfLetter d c =
-  let mockE = Rep {_text = T.singleton c, _pron = []}
+  let mockE = Rep {_text = T.singleton (C.toLower c), _pron = []}
       maybeE = _entry <$> Map.lookupGE mockE d
    in case maybeE of
         Nothing -> Nothing
         Just e ->
-          if T.head (text e) == c
+          if T.head (T.toLower (text e)) == C.toLower c
             then Just e
             else Nothing
 

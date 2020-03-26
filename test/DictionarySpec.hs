@@ -67,6 +67,17 @@ spec = do
                 )
           )
           `shouldBe` 2
+  describe "ordering" $ do
+    it "orders capital letter and lowercase letter entries together (a)" $ do
+      first caseMockDictA `shouldBe` bigAcorn
+      next caseMockDictA bigAcorn `shouldBe` Just apple
+    it "orders capital letter and lowercase letter entries together (b)" $ do
+      first caseMockDictB `shouldBe` apple
+      next caseMockDictB apple `shouldBe` Just bigArrow
+    it "includes capital letter entries when returning firstOfLetter" $
+      firstOfLetter caseMockDictA 'a' `shouldBe` Just bigAcorn
+    it "treats capital letters the same as lowercase" $
+      firstOfLetter caseMockDictA 'A' `shouldBe` firstOfLetter caseMockDictA 'a'
   describe "methods" $ do
     describe "first"
       $ it "provides first element of a dictionary"
@@ -157,6 +168,22 @@ mockDict =
       durian
     ]
 
+caseMockDictA :: Dictionary
+caseMockDictA =
+  fromList
+    [ apple,
+      bigAcorn,
+      banana
+    ]
+
+caseMockDictB :: Dictionary
+caseMockDictB =
+  fromList
+    [ apple,
+      bigArrow,
+      banana
+    ]
+
 apple :: Entry
 apple = Entry "apple" Set.empty []
 
@@ -177,3 +204,9 @@ zebra = Entry "zebra" (Set.singleton (Definition "a test zebra" "n" ["animal"]))
 
 trumpet :: Entry
 trumpet = Entry "trumpet" (Set.singleton (Definition "a test trumpet" "n" [])) []
+
+bigAcorn :: Entry
+bigAcorn = Entry "Acorn" Set.empty []
+
+bigArrow :: Entry
+bigArrow = Entry "Arrow" Set.empty []
