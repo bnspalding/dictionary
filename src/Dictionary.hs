@@ -40,6 +40,7 @@ module Dictionary
     --
     -- $filtering
     subDict,
+    subDictTrim,
     subPOS,
     subXTags,
   )
@@ -165,8 +166,6 @@ _maybe xs =
     then Nothing
     else Just xs
 
--- TODO: make subDictStrict that strips entries of non-matching definitions
-
 -- $filtering
 -- Sub-dictionaries can be constructed to filter a set of entries according to
 -- some predicate. 'subDict' can produce arbitrary sub-dictionaries according to
@@ -199,6 +198,29 @@ _maybe xs =
 subDict :: Dictionary -> (Entry -> Bool) -> Dictionary
 subDict d f = Map.filterWithKey (\k v -> f (_entry (k, v))) d
 
+-- | subDictTrim removes definitions from entries in a dictionary. An entry that
+-- has had all of its definitions removed is not returned as part of the
+-- sub-dictionary. For example,
+--
+-- > subDictTrim d ((== "n") . pos)
+--
+-- will produce a subdictionary of d where all definitions with parts of speech
+-- other than "n" will be removed, and all entries without definitions with part
+-- of speech "n" will be removed.
+subDictTrim :: Dictionary -> (Definition -> Bool) -> Dictionary
+subDictTrim d f =
+  fromList $
+    Map.foldrWithKey -- using foldr as a map + filter
+      ( \k v acc ->
+          let e = _entry (k, trim v)
+           in if not (empty e) then e : acc else acc
+      )
+      []
+      d
+  where
+    empty = Set.null . definitions
+    trim = Set.filter f
+
 -- | subPOS provides the sub-dictionary where at least one definition for each
 -- entry is the given POS. For example,
 --
@@ -211,7 +233,8 @@ subDict d f = Map.filterWithKey (\k v -> f (_entry (k, v))) d
 -- of speech from each entry in the sub-dictionary. So an entry with multiple
 -- definitions will retain all of its definitions when it is reproduced in the
 -- sub-dictionary, even if only a subset of those definitions match the given
--- part of speech.
+-- part of speech. Use 'subDictTrim' to actually remove definitions from an
+-- entry while keeping the entry.
 subPOS :: Dictionary -> T.Text -> Dictionary
 subPOS d target =
   subDict d (\e -> any (\def -> pos def == target) (Set.toList $ definitions e))
@@ -226,7 +249,8 @@ subPOS d target =
 --
 --  Note: this does not filter out definitions that contain the tags, so long as
 --  there is at least one other definition for the word that does not contain
---  the tags.
+--  the tags. Use 'subDictTrim' to actually remove definitions from an entry
+--  while keeping the entry.
 subXTags :: Dictionary -> [T.Text] -> Dictionary
 subXTags d xTags =
   subDict d (\e -> not $ all (\def -> any (`elem` tags def) xTags) (Set.toList $ definitions e))

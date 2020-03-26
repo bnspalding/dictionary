@@ -142,6 +142,15 @@ spec = do
           `shouldBe` fromList [trumpet]
       it "provides an empty dictionary when no matches are present" $
         subXTags (fromList [zebra]) ["animal"] `shouldBe` fromList []
+    describe "subDictTrim" $ do
+      it "removes matching definitions from entries in the resulting subdict" $
+        subDictTrim (fromList [mockEntryMultiDef]) ((== "n") . pos)
+          `shouldBe` fromList [mockEntrySingleDef]
+      it "removes entries where all definitions have been removed" $
+        subDictTrim
+          (fromList [mockEntryMultiDef, mockEntrySingleDef2])
+          ((== "n") . pos)
+          `shouldBe` fromList [mockEntrySingleDef]
 
 mockEntrySingleDef :: Entry
 mockEntrySingleDef = Entry "test" (Set.singleton mockDef1) []
