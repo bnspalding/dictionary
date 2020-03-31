@@ -5,6 +5,8 @@ module GHCI where
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Lazy.Char8 as C
 import Data.Either (rights)
+import Data.List
+import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import Dictionary
@@ -29,7 +31,7 @@ printPron =
   TIO.putStrLn . either T.pack (ipa . head . pronunciations) =<< wFirst
 
 wiktdict :: IO Dictionary
-wiktdict = subXPOS . flip subXTags filterTags . makeDictionary . rights . readJSONL <$> wiktData
+wiktdict = filterWordsAndDefs =<< subXPOS . flip subXTags filterTags . makeDictionary . rights . readJSONL <$> wiktData
 
 testIPA :: IO [Entry]
 testIPA = toList <$> wiktdict
@@ -57,7 +59,7 @@ filterTags =
   ]
 
 filterPOSs :: [T.Text]
-filterPOSs = ["name", "prefix", "suffix", "phrase"]
+filterPOSs = ["name", "infix", "prefix", "suffix", "phrase"]
 
 subXPOS :: Dictionary -> Dictionary
 subXPOS = flip subDict $ \e ->
@@ -66,3 +68,18 @@ subXPOS = flip subDict $ \e ->
 
 subStartsWith :: Dictionary -> Char -> Dictionary
 subStartsWith d c = subDict d $ (== c) . T.head . text
+
+filterWordsAndDefs :: Dictionary -> IO Dictionary
+filterWordsAndDefs d = do
+  filterFile <- getEnv "FILTERLIST"
+  filterList <- T.lines <$> TIO.readFile filterFile
+  let filterDefs =
+        flip
+          subDict
+          ( any
+              (null . flip intersect filterList . T.words . Dictionary.gloss)
+              . Set.toList
+              . definitions
+          )
+      filterText = flip subDict (not . (`elem` filterList) . text)
+  return . filterDefs . filterText $ d
