@@ -10,6 +10,7 @@ import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import Dictionary
+import DictionaryIO
 import System.Environment
 import Wiktionary
 
@@ -31,7 +32,10 @@ printPron =
   TIO.putStrLn . either T.pack (ipa . head . pronunciations) =<< wFirst
 
 wiktdict :: IO Dictionary
-wiktdict = filterWordsAndDefs =<< subXPOS . flip subXTags filterTags . makeDictionary . rights . readJSONL <$> wiktData
+wiktdict =
+  -- let source = makeDictionary . rights . readJSONL <$> wiktData
+  let source = readDictionary "dict.jsonl"
+   in filterWordsAndDefs =<< subXPOS . flip subXTags filterTags <$> source
 
 testIPA :: IO [Entry]
 testIPA = toList <$> wiktdict
@@ -55,7 +59,112 @@ filterTags =
     "archaic",
     "rare",
     "obsolete",
-    "Singapore"
+    "Singapore",
+    "medical",
+    "legal",
+    "plural",
+    "pharmaceutical drug",
+    "zoology",
+    "medicine",
+    "anatomy",
+    "biochemistry",
+    "law",
+    "biology",
+    "surgery",
+    "dialect",
+    "evolutionary theory",
+    "past",
+    "misspelling",
+    "comparative",
+    "superlative",
+    "plural",
+    "3",
+    "dialectical",
+    "grammar",
+    "sciences",
+    "geology",
+    "nautical",
+    "Scotland",
+    "dated",
+    "pharmaceutical effect",
+    "ornithology",
+    "electricity",
+    "dental",
+    "sometimes",
+    "phonetics",
+    "geography",
+    "in Spanish contexts",
+    "organizational theory",
+    "business",
+    "Islam",
+    "organic chemistry",
+    "organic compound",
+    "chemistry",
+    "physiology",
+    "AAVE",
+    "rhyming slang",
+    "psychoanalysis",
+    "UK",
+    "British",
+    "Australia",
+    "mathematics",
+    "linguistics",
+    "Christianity",
+    "philosophy",
+    "political science",
+    "physics",
+    "optics",
+    "person",
+    "surname",
+    "psychiatry",
+    "historical",
+    "outdated",
+    "psychology",
+    "abbreviation",
+    "angling",
+    "botany",
+    "rhetoric",
+    "pejorative",
+    "pathology",
+    "hematology",
+    "alchemy",
+    "astronomy",
+    "cartography",
+    "surveying",
+    "nonstandard",
+    "programming",
+    "neologism",
+    "immunology",
+    "phonology",
+    "dialectal",
+    "Hawaii",
+    "Indian cooking",
+    "inorganic chemistry",
+    "mycology",
+    "oncology",
+    "Jainism",
+    "marine biology",
+    "particle",
+    "Liverpool",
+    "possessive form",
+    "Philippines",
+    "religion",
+    "biblical",
+    "theology",
+    "geometry",
+    "fencing",
+    "jargon",
+    "Classical Philosophy",
+    "enzyme",
+    "computing",
+    "rocketry",
+    "game of go",
+    "Hinduism",
+    "Buddhism",
+    "Vedanta",
+    "science fiction",
+    "music",
+    "genetics"
   ]
 
 filterPOSs :: [T.Text]
