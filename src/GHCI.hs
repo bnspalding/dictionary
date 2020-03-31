@@ -71,7 +71,7 @@ subStartsWith d c = subDict d $ (== c) . T.head . text
 
 filterWordsAndDefs :: Dictionary -> IO Dictionary
 filterWordsAndDefs d = do
-  filterFile <- getEnv "FILTERLIST"
+  filterFile <- getEnv "FILTERWORDS"
   filterList <- T.lines <$> TIO.readFile filterFile
   let filterDefs =
         flip
