@@ -24,9 +24,8 @@ import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import Dictionary
-import Sound
 import Sound.Pronunciation (makePronunciation)
-import Sound.Word (sounds)
+import Sound.Word (symbols)
 
 readDictionary :: String -> IO Dictionary
 readDictionary filepath = do
@@ -69,7 +68,7 @@ entryToJSON e =
     quote = enclose "\"" "\""
     mkPair (k, v) = quote k <> ": " <> v
     mkArr objs = enclose "[" "]" $ T.intercalate ", " objs
-    pronString = T.concat $ (\(Sound s) -> s) <$> sounds (pronunciation e)
+    pronString = symbols (pronunciation e)
     definitionToJSON d =
       mkObj
         [ ("gloss", quote . escapeQuotes $ gloss d),
