@@ -74,7 +74,7 @@ entryToJSON e =
       mkObj
         [ ("gloss", quote . escapeQuotes $ gloss d),
           ("pos", quote $ pos d),
-          ("tags", mkArr (quote <$> tags d))
+          ("tags", mkArr (quote . escapeQuotes <$> tags d))
         ]
 
 escapeQuotes :: T.Text -> T.Text
