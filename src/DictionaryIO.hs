@@ -72,7 +72,10 @@ entryToJSON e =
     pronString = T.concat $ (\(Sound s) -> s) <$> sounds (pronunciation e)
     definitionToJSON d =
       mkObj
-        [ ("gloss", quote $ gloss d),
+        [ ("gloss", quote . escapeQuotes $ gloss d),
           ("pos", quote $ pos d),
           ("tags", mkArr (quote <$> tags d))
         ]
+
+escapeQuotes :: T.Text -> T.Text
+escapeQuotes = T.replace "\"" "\\\""
