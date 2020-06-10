@@ -1,0 +1,58 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: e0c97e9dd1904bc1aab3284a7f780eae3b92bb52501da0c96d7ca24d966b7b2f
+
+name:           dictionary
+version:        0.0
+synopsis:       lexical dictionary: words, glosses, pronunciations, pos
+description:    Please see the README on Github at <https://github.com/bnspalding/dictionary#readme>
+author:         bnspalding
+maintainer:     bnspalding
+copyright:      Copyright (c) 2019 Ben Spalding
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+
+library
+  exposed-modules:
+      Dictionary
+      DictionaryIO
+      Wiktionary
+  other-modules:
+      Paths_dictionary
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
+  build-depends:
+      aeson
+    , base >=4.9 && <5
+    , bytestring
+    , containers
+    , sound
+    , text
+  default-language: Haskell2010
+
+test-suite dictionary-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      DictionarySpec
+      WiktionarySpec
+      Paths_dictionary
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
+  build-depends:
+      aeson
+    , base >=4.9 && <5
+    , bytestring
+    , containers
+    , dictionary
+    , hspec
+    , sound
+    , text
+  default-language: Haskell2010
