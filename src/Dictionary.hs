@@ -18,16 +18,18 @@ module Dictionary
     makeEntry,
     fromList,
 
-    -- * Methods
+    -- * Get Entries
     first,
-    final,
-    size,
-    next,
-    prev,
     firstOfLetter,
-    contains,
+    final,
     lookupText,
     lookupPron,
+    next,
+    prev,
+
+    -- * Other
+    contains,
+    size,
     toList,
 
     -- * Sub-Dictionaries
