@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6f0ea9a1e2d54eb9a1c64d4a780ac9fe9b9d60e8102a7ca1c22db72980ac4d44
+-- hash: 77e28fbe7efbc9003c67dcd312269a163c1005186a50df07b43c6679441f2a46
 
 name:           dictionary
 version:        0.0
@@ -39,7 +39,9 @@ test-suite dictionary-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      DictionaryIOSpec
       DictionarySpec
+      DictionaryTestData
       Paths_dictionary
   hs-source-dirs:
       test
