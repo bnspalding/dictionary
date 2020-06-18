@@ -8,12 +8,6 @@
 -- A Dictionary is a set of lexical entries. It associates a ('text', 'pronunciation')
 -- pair with set of 'Definition's, where each association is an 'Entry'. A
 -- Dictionary is ordered alphabetically by text.
---
--- A special note about this representation of a dictionary: The 'next' and
--- 'prev' functions wrap around (such that the final element points to the first,
--- and the first element points to the final when using 'next' and 'prev'). This
--- decision comes from the way that Dictionary is used in Sequence, Selection
--- libraries farther up the ladder.
 module Dictionary
   ( -- * Types
     Dictionary,
