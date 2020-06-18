@@ -10,10 +10,14 @@
 -- DictionaryIO contains operations for writing a Dictionary to a file and
 -- reading it at a later time. This is useful for filtering a dictionary to a
 -- sub-dictionary once as a pre-process, and then being able to work with the
--- already reduced dictionary in the future. The Dictionary is written in JSON
--- Lines format, so it can also be hand-edited or worked over by some other
+-- already reduced dictionary in the future. The Dictionary is written in [JSON
+-- Lines format](http://jsonlines.org/), so it can also be hand-edited or worked over by some other
 -- program.
-module DictionaryIO where
+module DictionaryIO
+  ( readDictionary,
+    writeDictionary,
+  )
+where
 
 import Data.Aeson
 import Data.Aeson.Types
@@ -27,7 +31,9 @@ import Dictionary
 import Sound.Pronunciation (makePronunciation)
 import Sound.Word (symbols)
 
-readDictionary :: String -> IO Dictionary
+-- | readDictionary reads a Dictionary stored in JSON Line format at the given
+-- filepath.
+readDictionary :: FilePath -> IO Dictionary
 readDictionary filepath = do
   jsonEntries <- C.lines <$> B.readFile filepath
   return $ fromList $ catMaybes $ readSingleEntry <$> jsonEntries
@@ -49,13 +55,15 @@ readSingleEntry jsonEntry = do
         _pronAsSounds = fromMaybe [] (makePronunciation _pron)
     return $ Entry _text (Set.fromList (catMaybes _defs)) _pronAsSounds
 
--- I cannot get Data.Aeson to do what I want, so we're just doing this ourselves
--- for now
+-- | writeDictionary writes a Dictionary in JSON Line format at the given
+-- filepath.
 writeDictionary :: FilePath -> Dictionary -> IO ()
 writeDictionary filepath d = do
   let jsonEntries = entryToJSON <$> toList d
   TIO.writeFile filepath $ T.unlines jsonEntries
 
+-- I cannot get Data.Aeson to do what I want, so we're just doing this ourselves
+-- for now
 entryToJSON :: Entry -> T.Text
 entryToJSON e =
   mkObj
