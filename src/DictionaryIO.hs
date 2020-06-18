@@ -19,7 +19,7 @@ import Data.Aeson
 import Data.Aeson.Types
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Lazy.Char8 as C
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, fromMaybe)
 import qualified Data.Set as Set
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
@@ -46,7 +46,8 @@ readSingleEntry jsonEntry = do
               _pos <- dObj .: "pos"
               _tags <- dObj .: "tags"
               return $ Definition _gloss _pos _tags
-    return $ Entry _text (Set.fromList (catMaybes _defs)) (makePronunciation _pron)
+        _pronAsSounds = fromMaybe [] (makePronunciation _pron)
+    return $ Entry _text (Set.fromList (catMaybes _defs)) _pronAsSounds
 
 -- I cannot get Data.Aeson to do what I want, so we're just doing this ourselves
 -- for now

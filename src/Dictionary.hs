@@ -42,6 +42,7 @@ where
 
 import qualified Data.Char as C
 import qualified Data.Map.Strict as Map
+import Data.Maybe (fromMaybe)
 import qualified Data.Set as Set
 import qualified Data.Text as T
 import Sound.Pronunciation (Pronunciation, makePronunciation)
@@ -283,9 +284,10 @@ firstOfLetter c d =
 -- takes a list of definitions as its second argument.
 makeEntry :: T.Text -> [(T.Text, T.Text, [T.Text])] -> T.Text -> Entry
 makeEntry _text _defs _pronString =
-  Entry _text defs (makePronunciation _pronString)
+  Entry _text defs pron
   where
     defs = Set.fromList $ (\(g, p, ts) -> Definition g p ts) <$> _defs
+    pron = fromMaybe [] (makePronunciation _pronString)
 
 _entry :: (Rep, Set.Set Definition) -> Entry
 _entry (r, ds) = Entry (_text r) ds (_pron r)
