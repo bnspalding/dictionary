@@ -125,15 +125,15 @@ size = Map.size
 
 -- | next gives the next element of the Dictionary (alphabetically).
 -- next returns Nothing when it is the last entry in the dicitionary.
-next :: Dictionary -> Entry -> Maybe Entry
-next d entry =
+next :: Entry -> Dictionary -> Maybe Entry
+next entry d =
   let mockR = Rep {_text = text entry, _pron = []}
    in _entry <$> Map.lookupGT mockR d
 
 -- | prev gives the previous element of the Dictionary (alphabetically).
 -- prev returns Nothing when it is the first entry in the dictionary.
-prev :: Dictionary -> Entry -> Maybe Entry
-prev d entry =
+prev :: Entry -> Dictionary -> Maybe Entry
+prev entry d =
   let mockR = Rep {_text = text entry, _pron = []}
    in _entry <$> Map.lookupLT mockR d
 
@@ -141,18 +141,18 @@ prev d entry =
 -- entry. Note that because equality for Entries is based only on (text,
 -- pronunciation), you can construct a mock entry containing just these
 -- elements.
-contains :: Dictionary -> Entry -> Bool
-contains d e = Map.member (_toRep e) d
+contains :: Entry -> Dictionary -> Bool
+contains entry = Map.member (_toRep entry)
 
 -- | lookupText provides a list of Entries whose text element matches the
 -- provided text. If there are no matches, Nothing is returned.
-lookupText :: Dictionary -> T.Text -> Maybe [Entry]
-lookupText d target = _maybe $ toList $ subDict d (\e -> text e == target)
+lookupText :: T.Text -> Dictionary -> Maybe [Entry]
+lookupText target = _maybe . toList . subDict (\e -> text e == target)
 
 -- | lookupPron provides a list of Entries whose pronunciation element matches
 -- the provided pronunciation. If there are no matches, Nothing is returned.
-lookupPron :: Dictionary -> Pronunciation -> Maybe [Entry]
-lookupPron d target = _maybe $ toList $ subDict d (\e -> pronunciation e == target)
+lookupPron :: Pronunciation -> Dictionary -> Maybe [Entry]
+lookupPron target = _maybe . toList . subDict (\e -> pronunciation e == target)
 
 _maybe :: [a] -> Maybe [a]
 _maybe xs =
@@ -189,8 +189,8 @@ _maybe xs =
 
 -- | subDict filters the entries of a dictionary and returns the sub-dictionary
 -- of matching entries
-subDict :: Dictionary -> (Entry -> Bool) -> Dictionary
-subDict d f = Map.filterWithKey (\k v -> f (_entry (k, v))) d
+subDict :: (Entry -> Bool) -> Dictionary -> Dictionary
+subDict f = Map.filterWithKey (\k v -> f (_entry (k, v)))
 
 -- | subDictTrim removes definitions from entries in a dictionary. An entry that
 -- has had all of its definitions removed is not returned as part of the
@@ -201,16 +201,15 @@ subDict d f = Map.filterWithKey (\k v -> f (_entry (k, v))) d
 -- will produce a subdictionary of d where all definitions with parts of speech
 -- other than "n" will be removed, and all entries without definitions with part
 -- of speech "n" will be removed.
-subDictTrim :: Dictionary -> (Definition -> Bool) -> Dictionary
-subDictTrim d f =
-  fromList $
-    Map.foldrWithKey -- using foldr as a map + filter
+subDictTrim :: (Definition -> Bool) -> Dictionary -> Dictionary
+subDictTrim f =
+  fromList
+    . Map.foldrWithKey -- using foldr as a map + filter
       ( \k v acc ->
           let e = _entry (k, trim v)
            in if not (empty e) then e : acc else acc
       )
       []
-      d
   where
     empty = Set.null . definitions
     trim = Set.filter f
@@ -229,9 +228,9 @@ subDictTrim d f =
 -- sub-dictionary, even if only a subset of those definitions match the given
 -- part of speech. Use 'subDictTrim' to actually remove definitions from an
 -- entry while keeping the entry.
-subPOS :: Dictionary -> T.Text -> Dictionary
-subPOS d target =
-  subDict d (\e -> any (\def -> pos def == target) (Set.toList $ definitions e))
+subPOS :: T.Text -> Dictionary -> Dictionary
+subPOS target =
+  subDict (\e -> any (\def -> pos def == target) (Set.toList $ definitions e))
 
 -- | subXTags provides a sub-dictionary where an entry has been removed if all
 -- of its definitions contain at least one of the given tags. For example,
@@ -245,13 +244,21 @@ subPOS d target =
 --  there is at least one other definition for the word that does not contain
 --  the tags. Use 'subDictTrim' to actually remove definitions from an entry
 --  while keeping the entry.
-subXTags :: Dictionary -> [T.Text] -> Dictionary
-subXTags d xTags =
-  subDict d (\e -> not $ all (\def -> any (`elem` tags def) xTags) (Set.toList $ definitions e))
+subXTags :: [T.Text] -> Dictionary -> Dictionary
+subXTags xTags =
+  subDict
+    ( \e ->
+        not $
+          all
+            ( \def ->
+                any (`elem` tags def) xTags
+            )
+            (Set.toList $ definitions e)
+    )
 
 -- | toList converts a Dictionary to a list of Entries.
 toList :: Dictionary -> [Entry]
-toList d = _entry <$> Map.toList d
+toList = fmap _entry . Map.toList
 
 -- becase lookupGE returns the first entry GE an entry with text "c"
 -- it is necessary to ensure the entry actually starts with c
@@ -261,8 +268,8 @@ toList d = _entry <$> Map.toList d
 -- | firstOfLetter provides the first entry whose text begins with a given
 -- letter. If there are no entries in the Dictionary that begin with the given
 -- letter, Nothing is returned.
-firstOfLetter :: Dictionary -> Char -> Maybe Entry
-firstOfLetter d c =
+firstOfLetter :: Char -> Dictionary -> Maybe Entry
+firstOfLetter c d =
   let mockE = Rep {_text = T.singleton (C.toLower c), _pron = []}
       maybeE = _entry <$> Map.lookupGE mockE d
    in case maybeE of

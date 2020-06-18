@@ -70,14 +70,14 @@ spec = do
   describe "ordering" $ do
     it "orders capital letter and lowercase letter entries together (a)" $ do
       first caseMockDictA `shouldBe` bigAcorn
-      next caseMockDictA bigAcorn `shouldBe` Just apple
+      next bigAcorn caseMockDictA `shouldBe` Just apple
     it "orders capital letter and lowercase letter entries together (b)" $ do
       first caseMockDictB `shouldBe` apple
-      next caseMockDictB apple `shouldBe` Just bigArrow
+      next apple caseMockDictB `shouldBe` Just bigArrow
     it "includes capital letter entries when returning firstOfLetter" $
-      firstOfLetter caseMockDictA 'a' `shouldBe` Just bigAcorn
+      firstOfLetter 'a' caseMockDictA `shouldBe` Just bigAcorn
     it "treats capital letters the same as lowercase" $
-      firstOfLetter caseMockDictA 'A' `shouldBe` firstOfLetter caseMockDictA 'a'
+      firstOfLetter 'A' caseMockDictA `shouldBe` firstOfLetter 'a' caseMockDictA
   describe "methods" $ do
     describe "first"
       $ it "provides first element of a dictionary"
@@ -90,66 +90,66 @@ spec = do
       $ size mockDict `shouldBe` 5
     describe "next" $ do
       it "provides the next entry (alphabetically) in a dictionary" $
-        next mockDict apple `shouldBe` Just banana
+        next apple mockDict `shouldBe` Just banana
       it "returns Nothing when given the last element" $
-        next mockDict fig `shouldBe` Nothing
+        next fig mockDict `shouldBe` Nothing
     describe "prev" $ do
       it "provides the previous entry (alphabetically) in a dictionary" $
-        prev mockDict cherry `shouldBe` Just banana
+        prev cherry mockDict `shouldBe` Just banana
       it "returns Nothing when given the first element" $
-        prev mockDict apple `shouldBe` Nothing
+        prev apple mockDict `shouldBe` Nothing
     describe "firstOfLetter" $ do
       it "provides the first element of a given character (a-z)" $
-        firstOfLetter mockDict 'd' `shouldBe` Just durian
+        firstOfLetter 'd' mockDict `shouldBe` Just durian
       it "returns Nothing when no elements of the given character exist" $
-        firstOfLetter mockDict 'z' `shouldBe` Nothing
+        firstOfLetter 'z' mockDict `shouldBe` Nothing
     describe "contains" $ do
       it "returns True when an entry is present in the dictionary" $
-        contains mockDict cherry `shouldBe` True
+        contains cherry mockDict `shouldBe` True
       it "returns False when an entry is not present in the dictionary" $
-        contains mockDict zebra `shouldBe` False
+        contains zebra mockDict `shouldBe` False
     describe "lookupText" $ do
       it "provides a list of entries whose text match the given text" $
-        lookupText mockDict "fig" `shouldBe` Just [fig]
+        lookupText "fig" mockDict `shouldBe` Just [fig]
       it "returns Nothing when no elements match" $
-        lookupText mockDict "pig" `shouldBe` Nothing
+        lookupText "pig" mockDict `shouldBe` Nothing
     describe "lookupPron" $ do
       -- I don't want to import or mock Sound, so...
       it "provides a list of entries whose pronunciation match the given pron" $
-        lookupPron mockDict [] `shouldBe` Just (toList mockDict)
+        lookupPron [] mockDict `shouldBe` Just (toList mockDict)
       it "returns Nothing when no elements match" $
-        lookupPron (fromList []) [] `shouldBe` Nothing
+        lookupPron [] (fromList []) `shouldBe` Nothing
     describe "toList"
       $ it "converts a dictionary to a list"
       $ toList mockDict `shouldBe` [apple, banana, cherry, durian, fig]
   describe "sub-dictionaries" $ do
     describe "subDict" $ do
       it "provides a sub-dictionary based on some entry predicate" $
-        subDict mockDict (\e -> text e == "apple") `shouldBe` fromList [apple]
+        subDict (\e -> text e == "apple") mockDict `shouldBe` fromList [apple]
       it "provides the entire dictionary when given a tautology" $
-        subDict mockDict (const True) `shouldBe` mockDict
+        subDict (const True) mockDict `shouldBe` mockDict
       it "provides an empty dictionary when given a contradiction" $
-        subDict mockDict (const False) `shouldBe` fromList []
+        subDict (const False) mockDict `shouldBe` fromList []
     describe "subPOS" $ do
       it "provides a sub-dictionary based on a given part of speech" $
-        subPOS (fromList [apple, mockEntrySingleDef]) "n"
+        subPOS "n" (fromList [apple, mockEntrySingleDef])
           `shouldBe` fromList [mockEntrySingleDef]
       it "provides an empty dictionary when no matches are present" $
-        subPOS mockDict "not a part of speech" `shouldBe` fromList []
+        subPOS "not a part of speech" mockDict `shouldBe` fromList []
     describe "subXTags" $ do
       it "provides a sub-dictionary where entries are filtered on tags" $
-        subXTags (fromList [zebra, trumpet]) ["animal", "other tag"]
+        subXTags ["animal", "other tag"] (fromList [zebra, trumpet])
           `shouldBe` fromList [trumpet]
       it "provides an empty dictionary when no matches are present" $
-        subXTags (fromList [zebra]) ["animal"] `shouldBe` fromList []
+        subXTags ["animal"] (fromList [zebra]) `shouldBe` fromList []
     describe "subDictTrim" $ do
       it "removes matching definitions from entries in the resulting subdict" $
-        subDictTrim (fromList [mockEntryMultiDef]) ((== "n") . pos)
+        subDictTrim ((== "n") . pos) (fromList [mockEntryMultiDef])
           `shouldBe` fromList [mockEntrySingleDef]
       it "removes entries where all definitions have been removed" $
         subDictTrim
-          (fromList [mockEntryMultiDef, mockEntrySingleDef2])
           ((== "n") . pos)
+          (fromList [mockEntryMultiDef, mockEntrySingleDef2])
           `shouldBe` fromList [mockEntrySingleDef]
 
 mockEntrySingleDef :: Entry
