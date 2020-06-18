@@ -2,8 +2,10 @@
 
 module DictionaryTestData where
 
+import Data.Maybe (fromJust)
 import qualified Data.Set as Set
 import Dictionary
+import Sound.Pronunciation
 
 mockEntrySingleDef :: Entry
 mockEntrySingleDef = Entry "test" (Set.singleton mockDef1) []
@@ -46,6 +48,13 @@ caseMockDictB =
       banana
     ]
 
+caseMockDictC :: Dictionary
+caseMockDictC =
+  fromList
+    [ zebra,
+      trumpet
+    ]
+
 apple :: Entry
 apple = Entry "apple" Set.empty []
 
@@ -62,10 +71,18 @@ fig :: Entry
 fig = Entry "fig" Set.empty []
 
 zebra :: Entry
-zebra = Entry "zebra" (Set.singleton (Definition "a test zebra" "n" ["animal"])) []
+zebra =
+  Entry
+    "zebra"
+    (Set.singleton (Definition "a test zebra" "n" ["animal"]))
+    (fromJust (makePronunciation "ˈzi.bɹə"))
 
 trumpet :: Entry
-trumpet = Entry "trumpet" (Set.singleton (Definition "a test trumpet" "n" [])) []
+trumpet =
+  Entry
+    "trumpet"
+    (Set.singleton (Definition "a test trumpet" "n" []))
+    (fromJust (makePronunciation "ˈtɹʌ.pət"))
 
 bigAcorn :: Entry
 bigAcorn = Entry "Acorn" Set.empty []
