@@ -17,9 +17,9 @@ library:
   source-dirs: src
 
 executables:
-  mk-dictionary:
+  mk-dict:
     main: Main.hs
-    source-dirs: build
+    source-dirs: mk-dict
     dependencies:
         - dictionary
 

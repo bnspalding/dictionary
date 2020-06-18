@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 51ac82720b712edad24e2ddc84f5f9dfcafdffcd5f54b1440e1d467fbc5c7fb0
+-- hash: efd14244778217b3109920b78890798d80a5556770d3a60409169ab49ad74c50
 
 name:           dictionary
 version:        0.0
@@ -35,12 +35,12 @@ library
     , text
   default-language: Haskell2010
 
-executable mk-dictionary
+executable mk-dict
   main-is: Main.hs
   other-modules:
       Paths_dictionary
   hs-source-dirs:
-      build
+      mk-dict
   ghc-options: -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints
   build-depends:
       aeson
