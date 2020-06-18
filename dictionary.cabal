@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3c57ddbd76ed06271e443356176dbb91c65a6e805e37ca3f01e6d63bb73604ef
+-- hash: 6f0ea9a1e2d54eb9a1c64d4a780ac9fe9b9d60e8102a7ca1c22db72980ac4d44
 
 name:           dictionary
 version:        0.0
@@ -40,7 +40,6 @@ test-suite dictionary-test
   main-is: Spec.hs
   other-modules:
       DictionarySpec
-      WiktionarySpec
       Paths_dictionary
   hs-source-dirs:
       test
