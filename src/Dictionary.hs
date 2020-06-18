@@ -41,7 +41,7 @@ module Dictionary
 where
 
 import qualified Data.Char as C
-import qualified Data.Map as Map
+import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 import qualified Data.Text as T
 import Sound.Pronunciation (Pronunciation, makePronunciation)
