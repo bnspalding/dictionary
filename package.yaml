@@ -16,6 +16,13 @@ dependencies:
 library:
   source-dirs: src
 
+executables:
+  mk-dictionary:
+    main: Main.hs
+    source-dirs: build
+    dependencies:
+        - dictionary
+
 tests:
   dictionary-test:
     main: Spec.hs
