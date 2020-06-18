@@ -167,17 +167,7 @@ _maybe xs =
 -- a given predicate for entries to satisfy. 'subXTags' and 'subPOS' are
 -- convenience functions built on top of 'subDict'.
 --
--- In my work with Wiktionary, here are some of the filters that I apply to the
--- data:
---
--- By Tag:
---
--- > subXTags d ["offensive", "derogatory", "informal", "spoken",
--- > "imitating Irish accent", "Singlish", "Braille", "humorous", "vulgar",
--- > "colloquial", "ethnic slur", "religious slur", "informal", "slang",
--- > "archaic", "rare", "obsolete", "Singapore"]
---
--- By Word:
+-- To filter a dictionary by word:
 --
 -- > subDict d (`elem` ["my filter words"] . text)
 --
