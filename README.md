@@ -42,7 +42,7 @@ import Dictionary
 let dict = fromList $
   [ (makeEntry "opal" [("a gemstone", "n", [])] "ˈo͡ʊ.pəl"),
     (makeEntry "stack" [("a vertical pile", "n", []), ("to place vertically", "v", [])] "stæk"),
-    (makeEntry "aardvark" [("a very cute animal"), "n", ["animal"])] "ˈɑɹd.vɑɹk")
+    (makeEntry "aardvark" [("a very cute animal", "n", ["animal"])] "ˈɑɹd.vɑɹk")
   ]
 -- generate a dictionary with three entries
 
