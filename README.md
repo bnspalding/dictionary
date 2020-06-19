@@ -91,12 +91,13 @@ lookupText "opal" dict
 lookupText "archway" dict
 -- Nothing
 
-lookupPron "opal" dict
--- Nothing
-
-lookupPron (fromJust (makePronunciation "ˈo͡ʊ.pəl"))
+lookupPron (fromJust (makePronunciation "ˈo͡ʊ.pəl")) dict
 -- Just [Entry "opal"]
 -- we use fromJust because we are confident our pronunciation text is valid
+
+lookupPron (fromJust (makePronunciation "opal")) dict
+-- Nothing
+-- The pronunciation is valid, but there is no matching entry in the dictionary
 ```
 
 Entries are ordered alphabetically within the dictionary. You can move from one
