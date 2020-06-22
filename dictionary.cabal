@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: efd14244778217b3109920b78890798d80a5556770d3a60409169ab49ad74c50
+-- hash: 44ff6197fdb0fcff130271146870590342fa52e4b8f74c6a50ec11b8fd4a3a9e
 
 name:           dictionary
 version:        0.0
@@ -48,6 +48,7 @@ executable mk-dict
     , bytestring
     , containers
     , dictionary
+    , optparse-applicative
     , sound
     , text
   default-language: Haskell2010

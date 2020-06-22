@@ -22,6 +22,7 @@ executables:
     source-dirs: mk-dict
     dependencies:
         - dictionary
+        - optparse-applicative
 
 tests:
   dictionary-test:
