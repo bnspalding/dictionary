@@ -33,6 +33,7 @@ module Dictionary
     toList,
 
     -- * Sub-Dictionaries
+
     --
     -- $filtering
     subDict,
@@ -64,11 +65,10 @@ type Dictionary = Map.Map Rep (Set.Set Definition)
 -- For example,
 -- (\"read\", \"ɹid\") is a unique pair separate from (\"read\", \"ɹɛd\"), (\"reed\",
 -- \"ɹid\"), and (\"red\", \"ɹɛd\").
-data Rep
-  = Rep
-      { _text :: T.Text,
-        _pron :: Pronunciation
-      }
+data Rep = Rep
+  { _text :: T.Text,
+    _pron :: Pronunciation
+  }
   deriving (Eq, Show)
 
 -- | Rep is sorted by its text component (alphabetically, like a dictionary)
@@ -76,14 +76,13 @@ instance Ord Rep where
   compare r1 r2 = compare (T.toLower (_text r1)) (T.toLower (_text r2))
 
 -- | A Definition is a meaning, an ontological unit of a dictionary.
-data Definition
-  = Definition
-      { -- | gloss gives the textual definition for a word
-        gloss :: T.Text,
-        -- | pos gives the part of speech tied to the definition
-        pos :: T.Text,
-        tags :: [T.Text]
-      }
+data Definition = Definition
+  { -- | gloss gives the textual definition for a word
+    gloss :: T.Text,
+    -- | pos gives the part of speech tied to the definition
+    pos :: T.Text,
+    tags :: [T.Text]
+  }
   deriving (Eq, Ord, Show)
 
 -- | an Entry associates a (text, pronunciation) pair with a set of unique
@@ -93,12 +92,11 @@ data Definition
 --
 -- Entries are compared based on their text, and they are evaluated for equality
 -- (uniqueness) based on their (text, pronunciation) pair.
-data Entry
-  = Entry
-      { text :: T.Text,
-        definitions :: Set.Set Definition, -- gloss, pos
-        pronunciation :: Pronunciation -- same as Sound.Word, i.e. [Syl]
-      }
+data Entry = Entry
+  { text :: T.Text,
+    definitions :: Set.Set Definition, -- gloss, pos
+    pronunciation :: Pronunciation -- same as Sound.Word, i.e. [Syl]
+  }
   deriving (Show)
 
 -- | Entries are ordered based on their text (alphabetically)

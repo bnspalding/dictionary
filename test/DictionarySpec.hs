@@ -80,15 +80,15 @@ spec = do
     it "treats capital letters the same as lowercase" $
       firstOfLetter 'A' caseMockDictA `shouldBe` firstOfLetter 'a' caseMockDictA
   describe "methods" $ do
-    describe "first"
-      $ it "provides first element of a dictionary"
-      $ first mockDict `shouldBe` apple
-    describe "final"
-      $ it "provides the final element of a dictionary"
-      $ final mockDict `shouldBe` fig
-    describe "size"
-      $ it "provides the number of elements in a dictionary"
-      $ size mockDict `shouldBe` 5
+    describe "first" $
+      it "provides first element of a dictionary" $
+        first mockDict `shouldBe` apple
+    describe "final" $
+      it "provides the final element of a dictionary" $
+        final mockDict `shouldBe` fig
+    describe "size" $
+      it "provides the number of elements in a dictionary" $
+        size mockDict `shouldBe` 5
     describe "next" $ do
       it "provides the next entry (alphabetically) in a dictionary" $
         next apple mockDict `shouldBe` Just banana
@@ -120,9 +120,9 @@ spec = do
         lookupPron [] mockDict `shouldBe` Just (toList mockDict)
       it "returns Nothing when no elements match" $
         lookupPron [] (fromList []) `shouldBe` Nothing
-    describe "toList"
-      $ it "converts a dictionary to a list"
-      $ toList mockDict `shouldBe` [apple, banana, cherry, durian, fig]
+    describe "toList" $
+      it "converts a dictionary to a list" $
+        toList mockDict `shouldBe` [apple, banana, cherry, durian, fig]
   describe "sub-dictionaries" $ do
     describe "subDict" $ do
       it "provides a sub-dictionary based on some entry predicate" $
