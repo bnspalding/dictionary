@@ -1,0 +1,8 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "dictionary:lib"
+    - path: "./test"
+      component: "dictionary:test:dictionary-test"
+    - path: "./mk-dict"
+      component: "dictionary:exe:mk-dict"
